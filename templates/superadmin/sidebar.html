@@ -1,0 +1,24 @@
+{% block sidebar_items %}
+<div class="sidebar-dropdown p-3 border-bottom dropdown">
+    <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true"
+        aria-expanded="false">Homashyo ombori</a>
+    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+        <a class="dropdown-item" href="{% url 'superuser:dashboard' %}">Homashyo ombori</a>
+        <a class="dropdown-item text-danger" href="{% url 'superuser:material_inactives' %}">Tasdiqlanmagan
+            homashyolar</a>
+        <a class="dropdown-item" href="{% url 'superuser:material_types' %}">Homashyo turlari</a>
+        <a class="dropdown-item" href="{% url 'superuser:material_history' %}">Tarix</a>
+    </div>
+</div>
+
+<div class="sidebar-dropdown p-3 border-bottom dropdown">
+    <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true"
+        aria-expanded="false">Ehtiyot qismlar</a>
+    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+        <a class="dropdown-item" href="{% url 'superuser:spare_list' %}">Ehtiyot qism ombori</a>
+        <a class="dropdown-item" href="{% url 'superuser:spare_export' %}">Ehtiyot qismlari eksport</a>
+        <a class="dropdown-item" href="{% url 'superuser:spare_types' %}">Ehtiyot qism turlari</a>
+        <a class="dropdown-item" href="{% url 'superuser:spare_history' %}">Tarix</a>
+    </div>
+</div>
+{% endblock sidebar_items %}
