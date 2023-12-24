@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+
+{% block sidebar_items %}
+{% include '../sidebar.html' %}
+{% endblock sidebar_items %}
+
+
+{% block content %}
+
+<h3 class="mt-2">Etiketika turlari</h3>
+<hr>
+<br>
+
+<form method="post">
+    {% csrf_token %}
+
+
+    <div class="mb-2">
+        <b>{{object}}</b>
+    </div>
+
+    <a href="{% url 'superuser:label_types' %}" class="btn btn-secondary">Ortga</a>
+
+    <button {% if restricted %} disabled {% endif %} type="submit" id="submit-btn"
+        class="btn btn-danger">O'chirish</button>
+
+
+    <div class="mt-2">
+        {% if restricted %}
+        <span class="badge bg-danger">
+            Ushbu etiketika turini o'chirish mumkin emas. Omborda ushbu mahsulot mavjud.
+        </span>
+        {% endif %}
+    </div>
+
+
+</form>
+<br>
+
+<hr>
+
+
+
+
+
+{% endblock content %}

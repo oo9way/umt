@@ -225,3 +225,109 @@ class SpareExportView(IsAdminRole, ListView):
         context["where"] = WHERE
 
         return context
+
+
+class LabelListView(IsAdminRole, ListView):
+    model = LabelStorage
+    paginate_by = 20
+    template_name = "superadmin/label/home.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["form"] = InsertLabel
+        return context
+
+    def post(self, request, *args, **kwargs):
+        LabelStorage.import_label(request)
+        return redirect(reverse("superuser:label_list"))
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        queryset = queryset.order_by("-id").filter(is_active="active")
+        return queryset
+
+
+class LabelTypeListView(IsAdminRole, ListView):
+    model = LabelType
+    template_name = "superadmin/label/label_types.html"
+    paginate_by = 20
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        queryset = queryset.order_by("-id")
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["form"] = InsertLabelTypeForm
+        return context
+
+    def post(self, request, *args, **kwargs):
+        form = InsertLabelTypeForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect(reverse("superuser:label_types"))
+
+
+class LabelTypeUpdateView(IsAdminRole, UpdateView):
+    model = LabelType
+    fields = ["name"]
+    success_url = reverse_lazy("superuser:label_types")
+    template_name = "superadmin/label/label_type_form.html"
+
+
+class LabelTypeDeleteView(IsAdminRole, DeleteView):
+    model = LabelType
+    success_url = reverse_lazy("superuser:label_types")
+    template_name = "superadmin/label/label_type_confirm_delete.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        obj = self.get_object()
+        context["restricted"] = LabelStorage.objects.filter(label=obj).exists()
+        return context
+
+
+class LabelHistoryListView(IsAdminRole, ListView):
+    model = LabelStorageHistory
+    template_name = "superadmin/label/label_history.html"
+    paginate_by = 20
+    ordering = ["-created_at"]
+
+
+class LabelExportView(IsAdminRole, ListView):
+    query = False
+    found = False
+    template_name = "superadmin/label/export.html"
+    model = LabelStorage
+    paginate_by = 50
+
+    def get(self, request, *args, **kwargs):
+        title = self.request.GET.get("title", None)
+        if title:
+            self.query = True
+            self.queryset = LabelStorage.objects.filter(
+                label__name__icontains=title, is_active="active"
+            )
+            self.found = self.queryset.exists()
+
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        obj = self.request.POST.get("object", None)
+        amount = self.request.POST.get("amount", None)
+        where = self.request.POST.get("where", None)
+
+        label = get_object_or_404(LabelStorage, pk=obj)
+        if float(label.amount) >= float(amount):
+            label.export(request.user, amount, where)
+
+        return redirect(reverse("superuser:label_export"))
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["query"] = self.query
+        context["found"] = self.found
+        context["where"] = WHERE
+
+        return context

@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+
+{% block sidebar_items %}
+{% include '../sidebar.html' %}
+{% endblock sidebar_items %}
+
+
+{% block content %}
+
+<h3 class="mt-2">Etiketika turlari</h3>
+<hr>
+<br>
+
+<form method="post">
+    <div class="column-2">
+        {% csrf_token %}
+        {{form|crispy}}
+    </div>
+    <a href="{% url 'superuser:label_types' %}" class="btn btn-secondary">Ortga</a>
+
+    <button type="submit" id="submit-btn" class="btn btn-primary">Yangilash</button>
+</form>
+<br>
+
+<hr>
+
+
+
+
+
+{% endblock content %}

@@ -28,6 +28,7 @@ ACTION_TYPES = (
 WHERE = (
     ("null", "--------"),
     ("material", "Homashyo ombori"),
+    ("label", "Etiketika ombori"),
     ("spare", "Ehtiyot qism ombori"),
     ("yaim", "Yarim tayyor mahsulot"),
     ("production", "Tayyor mahsulot ombori"),
@@ -222,14 +223,14 @@ class SpareStorage(models.Model):
 
         if spare.exists():
             m = spare.first()
-            m.amount = int(m.amount) + int(request.POST.get("amount"))
+            m.amount = float(m.amount) + float(request.POST.get("amount"))
             m.import_comment = request.POST.get("import_comment")
             m.save()
 
         else:
             cls.objects.create(
                 spare=spare_type,
-                amount=int(request.POST.get("amount")),
+                amount=float(request.POST.get("amount")),
                 amount_type=amount_type,
                 price=price,
                 confirmed_price=confirmed_price,
@@ -276,6 +277,125 @@ class SpareStorageHistory(models.Model):
     action = models.CharField(choices=ACTION_TYPES, max_length=9)
     amount = models.CharField(default="0", max_length=255)
     amount_type = models.CharField(choices=AMOUNTS, max_length=5, default="meter")
+    price = models.CharField(max_length=255, blank=True)
+    price_type = models.CharField(choices=CURRENCIES, default="usd", max_length=5)
+    where = models.CharField(choices=WHERE, max_length=16, default="null")
+
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+# LABEL TYPES, STORAGE AND HISTORY
+class LabelType(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class LabelStorage(models.Model):
+    label = models.ForeignKey(
+        LabelType, on_delete=models.PROTECT, verbose_name="Etiketika turi"
+    )
+    amount = models.IntegerField(default=0, verbose_name="Miqdori")
+    amount_type = models.CharField(
+        choices=AMOUNTS, max_length=5, default="point", verbose_name="Miqdor turi"
+    )
+    price = models.CharField(max_length=255, verbose_name="Narxi")
+    confirmed_price = models.CharField(
+        max_length=600, default=0, verbose_name="Tasdiqlangan narxi"
+    )
+
+    price_type = models.CharField(
+        choices=CURRENCIES, default="usd", max_length=3, verbose_name="Pul birligi"
+    )
+
+    import_comment = models.CharField(max_length=255, verbose_name="Izoh")
+
+    is_active = models.CharField(
+        choices=ACTIVE, max_length=8, default="active", verbose_name="Aktiv"
+    )
+
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.label.name
+
+    @classmethod
+    def import_label(cls, request):
+        label_id = request.POST.get("label")
+        price = request.POST.get("price")
+        confirmed_price = request.POST.get("confirmed_price")
+        price_type = request.POST.get("price_type")
+        amount_type = request.POST.get("amount_type")
+
+        label_type = LabelType.objects.get(id=label_id)
+
+        label = cls.objects.filter(
+            label=label_type,
+            price=price,
+            confirmed_price=confirmed_price,
+            price_type=price_type,
+            amount_type=amount_type,
+            is_active="active",
+        )
+
+        if label.exists():
+            m = label.first()
+            m.amount = float(m.amount) + float(request.POST.get("amount"))
+            m.import_comment = request.POST.get("import_comment")
+            m.save()
+
+        else:
+            cls.objects.create(
+                label=label_type,
+                amount=float(request.POST.get("amount")),
+                amount_type=amount_type,
+                price=price,
+                confirmed_price=confirmed_price,
+                price_type=price_type,
+                import_comment=request.POST.get("import_comment"),
+                is_active="active",
+            )
+
+        LabelStorageHistory.objects.create(
+            executor=request.user,
+            label=label_type,
+            action="import",
+            amount=float(request.POST.get("amount")),
+            price=price,
+            price_type=price_type,
+            amount_type=amount_type,
+            where="label",
+        )
+
+    def export(self, user, amount, where):
+        LabelStorageHistory.objects.create(
+            executor=user,
+            label=self.label,
+            action="export",
+            amount=amount,
+            amount_type=self.amount_type,
+            price=self.price,
+            price_type=self.price_type,
+            where=where,
+        )
+
+        self.amount = float(self.amount) - float(amount)
+        self.save()
+
+        if float(self.amount) <= 0:
+            self.delete()
+
+
+class LabelStorageHistory(models.Model):
+    executor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    label = models.ForeignKey(LabelType, on_delete=models.SET_NULL, null=True)
+
+    action = models.CharField(choices=ACTION_TYPES, max_length=9)
+    amount = models.CharField(default="0", max_length=255)
+    amount_type = models.CharField(choices=AMOUNTS, max_length=5, default="point")
     price = models.CharField(max_length=255, blank=True)
     price_type = models.CharField(choices=CURRENCIES, default="usd", max_length=5)
     where = models.CharField(choices=WHERE, max_length=16, default="null")

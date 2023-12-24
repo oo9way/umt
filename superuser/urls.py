@@ -1,6 +1,12 @@
 from django.urls import path
 from superuser.views import (
     HomePageView,
+    LabelExportView,
+    LabelHistoryListView,
+    LabelListView,
+    LabelTypeDeleteView,
+    LabelTypeListView,
+    LabelTypeUpdateView,
     MaterialInActiveCancelView,
     MaterialInActiveUpdateView,
     MaterialTypeListView,
@@ -85,6 +91,32 @@ urlpatterns += [
     ),
 ]
 
+# SPARE VIEWS
+urlpatterns += [
+    path("dashboard/label/", LabelListView.as_view(), name="label_list"),
+    path("dashboard/label/types/", LabelTypeListView.as_view(), name="label_types"),
+    path(
+        "dashboard/label/types/edit/<int:pk>/",
+        LabelTypeUpdateView.as_view(),
+        name="label_types_update",
+    ),
+    path(
+        "dashboard/label/types/delete/<int:pk>/",
+        LabelTypeDeleteView.as_view(),
+        name="label_types_delete",
+    ),
+    path(
+        "dashboard/label/history/",
+        LabelHistoryListView.as_view(),
+        name="label_history",
+    ),
+    path(
+        "dashboard/label/export/",
+        LabelExportView.as_view(),
+        name="label_export",
+    ),
+]
+
 
 # EXCEL GENERATORS
 urlpatterns += [
@@ -107,5 +139,15 @@ urlpatterns += [
         "dashboard/spare/generate-xls/",
         GenerateSpareExcel.as_view(),
         name="spare_xls",
+    ),
+    path(
+        "dashboard/label/history/generate-xls/",
+        GenerateLabelHistoryExcel.as_view(),
+        name="label_history_xls",
+    ),
+    path(
+        "dashboard/label/generate-xls/",
+        GenerateLabelExcel.as_view(),
+        name="label_xls",
     ),
 ]

@@ -1,5 +1,12 @@
 from django import forms
-from materials.models import MaterialStorage, MaterialType, SpareStorage, SpareType
+from materials.models import (
+    LabelStorage,
+    LabelType,
+    MaterialStorage,
+    MaterialType,
+    SpareStorage,
+    SpareType,
+)
 
 
 class InsertMaterialForm(forms.ModelForm):
@@ -53,3 +60,24 @@ class InsertSpareTypeForm(forms.ModelForm):
         model = SpareType
         fields = ("name",)
         labels = {"name": "Ehtiyot qism nomi"}
+
+
+class InsertLabel(forms.ModelForm):
+    class Meta:
+        model = LabelStorage
+        fields = (
+            "label",
+            "amount",
+            "amount_type",
+            "price",
+            "confirmed_price",
+            "price_type",
+            "import_comment",
+        )
+
+
+class InsertLabelTypeForm(forms.ModelForm):
+    class Meta:
+        model = LabelType
+        fields = ("name",)
+        labels = {"name": "Etiketika nomi"}

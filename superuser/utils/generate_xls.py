@@ -47,5 +47,25 @@ class GenerateSpareHistoryExcel(IsAdminRole, View):
         response = HttpResponse(dataset.xls, content_type="application/vnd.ms-excel")
         response[
             "Content-Disposition"
-        ] = 'attachment; filename="homashyo ombori tarixi.xlsx"'
+        ] = 'attachment; filename="ehtiyot qism ombori tarixi.xlsx"'
+        return response
+
+
+class GenerateLabelExcel(IsAdminRole, View):
+    def get(self, request, *args, **kwargs):
+        dataset = LabelModelResource().export(
+            LabelStorage.objects.all().order_by("-id")
+        )
+        response = HttpResponse(dataset.xls, content_type="application/vnd.ms-excel")
+        response["Content-Disposition"] = 'attachment; filename="etiketika ombori.xlsx"'
+        return response
+
+
+class GenerateLabelHistoryExcel(IsAdminRole, View):
+    def get(self, request, *args, **kwargs):
+        dataset = LabelHistoryModelResource().export(
+            LabelStorageHistory.objects.all().order_by("-id")
+        )
+        response = HttpResponse(dataset.xls, content_type="application/vnd.ms-excel")
+        response["Content-Disposition"] = 'attachment; filename="etiketika tarixi.xlsx"'
         return response

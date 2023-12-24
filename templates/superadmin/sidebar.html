@@ -21,4 +21,15 @@
         <a class="dropdown-item" href="{% url 'superuser:spare_history' %}">Tarix</a>
     </div>
 </div>
+
+<div class="sidebar-dropdown p-3 border-bottom dropdown">
+    <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true"
+        aria-expanded="false">Etiketika</a>
+    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+        <a class="dropdown-item" href="{% url 'superuser:label_list' %}">Etiketika ombori</a>
+        <a class="dropdown-item" href="{% url 'superuser:label_export' %}">Etiketika eksport</a>
+        <a class="dropdown-item" href="{% url 'superuser:label_types' %}">Etiketika turlari</a>
+        <a class="dropdown-item" href="{% url 'superuser:label_history' %}">Tarix</a>
+    </div>
+</div>
 {% endblock sidebar_items %}
