@@ -402,3 +402,64 @@ class LabelStorageHistory(models.Model):
 
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class Design(models.Model):
+    SEX_TYPE = (
+        ("male", "Erkak"),
+        ("female", "Ayol"),
+    )
+
+    SEASON_TYPE = (
+        ("winter", "Qishki"),
+        ("summer", "Yozgi"),
+    )
+
+    name = models.CharField(max_length=255)
+    amount = models.CharField(max_length=255, default=1)
+    sex = models.CharField(max_length=10, choices=SEX_TYPE)
+    season = models.CharField(max_length=6, choices=SEASON_TYPE)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+
+class DesignImmutable(models.Model):
+    CALC_TYPES = (("percent", "Foiz"), ("sum", "So'm"))
+
+    name = models.CharField(max_length=255)
+    calc_type = models.CharField(max_length=255, choices=CALC_TYPES)
+    cost = models.CharField(max_length=255)
+    design = models.ForeignKey(Design, on_delete=models.CASCADE)
+    task = models.CharField(max_length=255, null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+class DesignField(models.Model):
+    material_type = models.ForeignKey(MaterialType, on_delete=models.PROTECT)
+    design_type = models.ForeignKey(Design, on_delete=models.PROTECT)
+    amount = models.CharField(max_length=255, default="0")
+
+    def __str__(self):
+        return self.material_type.name
+
+
+class DesignLabel(models.Model):
+    design = models.ForeignKey(Design, on_delete=models.CASCADE)
+    label = models.ForeignKey(LabelType, on_delete=models.PROTECT)
+
+    price = models.CharField(max_length=255, null=True, blank=True)
+
+
+class ImmutableBalance(models.Model):
+    CALC_TYPES = (("percent", "Foiz"), ("sum", "So'm"))
+    type = models.CharField(max_length=255)
+    calc_type = models.CharField(max_length=255, choices=CALC_TYPES)
+    cost = models.CharField(max_length=255)
+
+    def __str__(self) -> str:
+        return self.type

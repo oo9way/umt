@@ -1,0 +1,545 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+
+{% block sidebar_items %}
+{% include '../sidebar.html' %}
+{% endblock sidebar_items %}
+
+
+{% block choice %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+{% endblock choice %}
+
+
+{% block content %}
+<div class="d-flex align-items-center gap-3">
+    <h1 class="">
+        Dizayn uchun materiallar va harajatlar
+    </h1>
+</div>
+
+<div class="card p-4 mt-3">
+    <div class="card-title h2">
+        Dizayn materiallari
+    </div>
+    <form method="post" class="mt-3">
+        {% csrf_token %}
+        <input type="hidden" name="type" value="import">
+        <div class="mb-3 row">
+            {{ form.management_form }}
+            {% for field in form%}
+            <div class="col-md-4 mb-2">{{field|crispy}}</div>
+            {% endfor %}
+        </div>
+        <hr>
+        <div class="card-title h2">
+            Dizayn harajatlari - etiketika
+        </div>
+        <div class="mb-3 row">
+            <div class="col-md-2 mb-2">
+                <div class="form-group mb-2">
+                    <label for="" class="mb-1">Etiketika 1</label>
+                    <input type="hidden" name="label1_id" {% if design.designlabel_set.all.0 %}
+                        value="{{design.designlabel_set.all.0.id}}" {% else %} value="" {% endif %}>
+                    <select name="label1" id="" class="form-control selectmultiple">
+                        {% if design.designlabel_set.all.0 %}
+                        <option value="{{design.designlabel_set.all.0.label.id}}">
+                            {{ design.designlabel_set.all.0.label.name }}</option>
+                        <option value="cancel">-- o'chirish -- </option>
+                        {% else %}
+                        <option value="">Etiketikani tanlang</option>
+                        {% endif %}
+                        {% for label in labels %}
+                        <option value="{{label.id}}">{{label.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group mb-2">
+                    <label for="" class="mb-1">Narxi</label>
+                    <input type="number" placeholder="Etiketika narxi" value="{{ design.designlabel_set.all.0.price }}"
+                        name="label1_amount" class="form-control">
+                </div>
+            </div>
+
+            <div class="col-md-2 mb-2">
+                <div class="form-group mb-2">
+                    <label for="" class="mb-1">Etiketika 2</label>
+                    <input type="hidden" name="label2_id" {% if design.designlabel_set.all.1 %}
+                        value="{{design.designlabel_set.all.1.id}}" {% else %} value="" {% endif %}>
+
+                    <select name="label2" id="" class="form-control selectmultiple">
+                        {% if design.designlabel_set.all.1 %}
+                        <option value="{{ design.designlabel_set.all.1.label.id }}">
+                            {{design.designlabel_set.all.1.label }}
+                        </option>
+                        <option value="cancel">-- o'chirish -- </option>
+                        {% else %}
+                        <option value="">Etiketikani tanlang</option>
+                        {% endif %}
+                        {% for label in labels %}
+                        <option value="{{label.id}}">{{label.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group mb-2">
+                    <label for="" class="mb-1">Narxi</label>
+                    <input type="number" placeholder="Etiketika narxi" name="label2_amount"
+                        value="{{design.designlabel_set.all.1.price}}" class="form-control">
+                </div>
+            </div>
+
+            <div class="col-md-2 mb-2">
+                <div class="form-group mb-2">
+                    <label for="" class="mb-1">Etiketika 3</label>
+                    <input type="hidden" name="label3_id" {% if design.designlabel_set.all.2 %}
+                        value="{{design.designlabel_set.all.2.id}}" {% else %} value="" {% endif %}>
+
+                    <select name="label3" id="" class="form-control selectmultiple">
+                        {% if design.designlabel_set.all.2 %}
+                        <option value="{{ design.designlabel_set.all.2.label.id }}">
+                            {{design.designlabel_set.all.2.label }}</option>
+                        <option value="cancel">-- o'chirish -- </option>
+                        {% else %}
+                        <option value="">Etiketikani tanlang</option>
+                        {% endif %}
+                        {% for label in labels %}
+                        <option value="{{label.id}}">{{label.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group mb-2">
+                    <label for="" class="mb-1">Narxi</label>
+                    <input type="number" placeholder="Etiketika narxi" name="label3_amount"
+                        value="{{design.designlabel_set.all.2.price}}" class="form-control">
+                </div>
+            </div>
+
+            <div class="col-md-2 mb-2">
+                <div class="form-group mb-2">
+                    <label for="" class="mb-1">Etiketika 4</label>
+                    <input type="hidden" name="label4_id" {% if design.designlabel_set.all.3 %}
+                        value="{{design.designlabel_set.all.3.id}}" {% else %} value="" {% endif %}>
+
+                    <select name="label4" id="" class="form-control selectmultiple">
+                        {% if design.designlabel_set.all.3 %}
+                        <option value="{{ design.designlabel_set.all.3.label.id }}">
+                            {{design.designlabel_set.all.3.label }}</option>
+                        <option value="cancel">-- o'chirish -- </option>
+                        {% else %}
+                        <option value="">Etiketikani tanlang</option>
+                        {% endif %}
+                        {% for label in labels %}
+                        <option value="{{label.id}}">{{label.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group mb-2">
+                    <label for="" class="mb-1">Narxi</label>
+                    <input type="number" placeholder="Etiketika narxi" name="label4_amount"
+                        {{design.designlabel_set.all.3.price}} class="form-control">
+                </div>
+            </div>
+
+            <div class="col-md-2 mb-2">
+                <div class="form-group mb-2">
+                    <label for="" class="mb-1">Etiketika 5</label>
+                    <input type="hidden" name="label5_id" {% if design.designlabel_set.all.4 %}
+                        value="{{design.designlabel_set.all.4.id}}" {% else %} value="" {% endif %}>
+
+                    <select name="label5" id="" class="form-control selectmultiple">
+                        {% if design.designlabel_set.all.4 %}
+                        <option value="{{ design.designlabel_set.all.4.label.id }}">{{design.designlabel_set.all.4.label }}</option>
+                        <option value="cancel">-- o'chirish -- </option>
+                        {% else %}
+                        <option value="">Etiketikani tanlang</option>
+                        {% endif %}
+                        {% for label in labels %}
+                        <option value="{{label.id}}">{{label.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group mb-2">
+                    <label for="" class="mb-1">Narxi</label>
+                    <input type="number" placeholder="Etiketika narxi" name="label5_amount"
+                        value="{{design.designlabel_set.all.4.price}}" class="form-control">
+                </div>
+            </div>
+
+            <div class="col-md-2 mb-2">
+                <div class="form-group mb-2">
+                    <label for="" class="mb-1">Etiketika 6</label>
+                    <input type="hidden" name="label6_id" {% if design.designlabel_set.all.5 %}
+                        value="{{design.designlabel_set.all.5.id}}" {% else %} value="" {% endif %}>
+
+                    <select name="label6" id="" class="form-control selectmultiple">
+                        {% if design.designlabel_set.all.5 %}
+                        <option value="{{ design.designlabel_set.all.5.label.id }}">
+                            {{design.designlabel_set.all.5.label }}</option>
+                        <option value="cancel">-- o'chirish -- </option>
+                        {% else %}
+                        <option value="">Etiketikani tanlang</option>
+                        {% endif %}
+                        {% for label in labels %}
+                        <option value="{{label.id}}">{{label.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group mb-2">
+                    <label for="" class="mb-1">Narxi</label>
+                    <input type="number" placeholder="Etiketika narxi" name="label6_amount"
+                        value="{{design.designlabel_set.all.5.price}}" class="form-control">
+                </div>
+            </div>
+
+
+        </div>
+
+        <!-- <div class="mb-3 row">
+            <div class="col-md-2 mb-2">
+                <div class="row">
+                    <div class="col-7">
+                        <div class="form-group mb-2">
+                            <label for="" class="mb-1">Etiketika 1</label>
+                            <input type="number" placeholder="Miqdori" name="salary_amount" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-5">
+                        <div class="form-group mb-2">
+                            <label for="" class="mb-1">His. turi</label>
+                            <select name="calc_type" id="" class="form-control">
+                                <option value="sum">so'm</option>
+                                <option value="percent">Foiz %</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-2 mb-2">
+                <div class="row">
+                    <div class="col-7">
+                        <div class="form-group mb-2">
+                            <label for="" class="mb-1">Etiketika</label>
+                            <input type="number" placeholder="Miqdori" name="salary_amount" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-5">
+                        <div class="form-group mb-2">
+                            <label for="" class="mb-1">His. turi</label>
+                            <select name="calc_type" id="" class="form-control">
+                                <option value="sum">so'm</option>
+                                <option value="percent">Foiz %</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-2 mb-2">
+                <div class="row">
+                    <div class="col-7">
+                        <div class="form-group mb-2">
+                            <label for="" class="mb-1">Etiketika</label>
+                            <input type="number" placeholder="Miqdori" name="salary_amount" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-5">
+                        <div class="form-group mb-2">
+                            <label for="" class="mb-1">His. turi</label>
+                            <select name="calc_type" id="" class="form-control">
+                                <option value="sum">so'm</option>
+                                <option value="percent">Foiz %</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 mb-2">
+                <div class="row">
+                    <div class="col-7">
+                        <div class="form-group mb-2">
+                            <label for="" class="mb-1">Ish haqi miqdori</label>
+                            <input type="number" placeholder="Miqdori" name="salary_amount" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-5">
+                        <div class="form-group mb-2">
+                            <label for="" class="mb-1">His. turi</label>
+                            <select name="calc_type" id="" class="form-control">
+                                <option value="sum">so'm</option>
+                                <option value="percent">Foiz %</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 mb-2">
+                <div class="row">
+                    <div class="col-7">
+                        <div class="form-group mb-2">
+                            <label for="" class="mb-1">Ish haqi miqdori</label>
+                            <input type="number" placeholder="Miqdori" name="salary_amount" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-5">
+                        <div class="form-group mb-2">
+                            <label for="" class="mb-1">His. turi</label>
+                            <select name="calc_type" id="" class="form-control">
+                                <option value="sum">so'm</option>
+                                <option value="percent">Foiz %</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 mb-2">
+                <div class="row">
+                    <div class="col-7">
+                        <div class="form-group mb-2">
+                            <label for="" class="mb-1">Ish haqi miqdori</label>
+                            <input type="number" placeholder="Miqdori" name="salary_amount" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-5">
+                        <div class="form-group mb-2">
+                            <label for="" class="mb-1">His. turi</label>
+                            <select name="calc_type" id="" class="form-control">
+                                <option value="sum">so'm</option>
+                                <option value="percent">Foiz %</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> -->
+
+        <hr>
+        <div class="card-title h2">
+            Umumiy harajatlar
+        </div>
+
+        <div class="mb-3 row">
+            <div class="col-md-2 mb-2">
+                <div class="form-group mb-2">
+                    <label for="" class="mb-1">Ish haqi</label>
+                    <input type="number" placeholder="Ish haqi miqdori" name="salary_amount" class="form-control" 
+                    {%if design.designimmutable_set.all.0 and design.designimmutable_set.all.0.task == 'salary'%}
+                        value="{{design.designimmutable_set.all.0.cost}}" 
+                    {%endif%} />
+                </div>
+                <div class="form-group mb-2">
+                    <label for="" class="mb-1">Hisoblash turi</label>
+                    <select name="salary_calc_type" id="" class="form-control">
+                        {% if design.designimmutable_set.all.0 and design.designimmutable_set.all.0.task == 'salary' %}
+                        <option value="{{design.designimmutable_set.all.0.calc_type}}">
+                            {{design.designimmutable_set.all.0.get_calc_type_display}}</option>
+                        {% endif %}
+                        <option value="sum">So'm</option>
+                        <option value="percent">Foiz %</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="col-md-2 mb-2">
+                <div class="form-group mb-2">
+                    <label for="" class="mb-1">Svet va gaz</label>
+                    <input type="number" placeholder="Harajat miqdori" name="energy_amount" class="form-control" 
+                    {% if design.designimmutable_set.all.1 and design.designimmutable_set.all.1.task == 'energy' %}
+                        value="{{design.designimmutable_set.all.1.cost}}" {% endif %} />
+                </div>
+
+                <div class="form-group mb-2">
+                    <label for="" class="mb-1">Hisoblash turi</label>
+                    <select name="energy_calc_type" id="" class="form-control">
+                        {% if design.designimmutable_set.all.1 and design.designimmutable_set.all.1.task == 'energy' %}
+                        <option value="{{design.designimmutable_set.all.1.calc_type}}">
+                            {{design.designimmutable_set.all.1.get_calc_type_display}}</option>
+                        {% endif %}
+                        <option value="sum">So'm</option>
+                        <option value="percent">Foiz %</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-md-2 mb-2">
+                <div class="form-group mb-2">
+                    <label for="" class="mb-1">Moy</label>
+                    <input type="number" placeholder="Harajat miqdori" name="oil_amount" class="form-control" 
+                    {% if design.designimmutable_set.all.2 and design.designimmutable_set.all.2.task == 'oil' %}
+                        value="{{design.designimmutable_set.all.2.cost}}" {% endif %} />
+                </div>
+
+                <div class="form-group mb-2">
+                    <label for="" class="mb-1">Hisoblash turi</label>
+                    <select name="oil_calc_type" id="" class="form-control">
+                        {% if design.designimmutable_set.all.2 and design.designimmutable_set.all.2.task == 'energy' %}
+                        <option value="{{design.designimmutable_set.all.2.calc_type}}">
+                            {{design.designimmutable_set.all.2.get_calc_type_display}}</option>
+                        {% endif %}
+                        <option value="sum">So'm</option>
+                        <option value="percent">Foiz %</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="col-md-2 mb-2">
+                <div class="form-group mb-2">
+                    <label for="" class="mb-1">Brak</label>
+                    <input type="number" placeholder="Harajat miqdori" name="brak_amount" class="form-control" 
+                    {% if design.designimmutable_set.all.3 and design.designimmutable_set.all.3.task == 'brak' %}
+                        value="{{design.designimmutable_set.all.3.cost}}" {% endif %} />
+                </div>
+
+                <div class="form-group mb-2">
+                    <label for="" class="mb-1">Hisoblash turi</label>
+                    <select name="brak_calc_type" id="" class="form-control">
+                        {% if design.designimmutable_set.all.3 and design.designimmutable_set.all.3.task == 'brak' %}
+                        <option value="{{design.designimmutable_set.all.3.calc_type}}">
+                            {{design.designimmutable_set.all.3.get_calc_type_display}}</option>
+                        {% endif %}
+                        <option value="sum">So'm</option>
+                        <option value="percent">Foiz %</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-md-2 mb-2">
+                <div class="form-group mb-2">
+                    <label for="" class="mb-1">Har xil</label>
+                    <input type="number" placeholder="Harajat miqdori" name="different_amount" class="form-control" 
+                    {% if design.designimmutable_set.all.4 and design.designimmutable_set.all.4.task == 'different' %}
+                        value="{{design.designimmutable_set.all.4.cost}}" {% endif %} />
+                </div>
+
+                <div class="form-group mb-2">
+                    <label for="" class="mb-1">Hisoblash turi</label>
+                    <select name="different_calc_type" id="" class="form-control">
+                        {% if design.designimmutable_set.all.4 and design.designimmutable_set.all.4.task == 'different' %}
+                        <option value="{{design.designimmutable_set.all.4.calc_type}}">
+                            {{design.designimmutable_set.all.4.get_calc_type_display}}</option>
+                        {% endif %}
+                        <option value="sum">So'm</option>
+                        <option value="percent">Foiz %</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="col-md-2 mb-2">
+                <div class="form-group mb-2">
+                    <label for="" class="mb-1">Qo'shimcha</label>
+                    <input type="number" placeholder="Harajat miqdori" name="anothers_amount" class="form-control" 
+                    {% if design.designimmutable_set.all.5 and design.designimmutable_set.all.5.task == 'anothers' %}
+                        value="{{design.designimmutable_set.all.5.cost}}" {% endif %} />
+                </div>
+
+                <div class="form-group mb-2">
+                    <label for="" class="mb-1">Hisoblash turi</label>
+                    <select name="anothers_calc_type" id="" class="form-control">
+                        {% if design.designimmutable_set.all.5 and design.designimmutable_set.all.5.task == 'anothers' %}
+                        <option value="{{design.designimmutable_set.all.5.calc_type}}">
+                            {{design.designimmutable_set.all.5.get_calc_type_display}}</option>
+                        {% endif %}
+                        <option value="sum">So'm</option>
+                        <option value="percent">Foiz %</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <hr>
+        <div class="card-title h2">
+            Doimiy harajatlar
+        </div>
+
+        <div class="mb-3 row">
+            <div class="col-md-2 mb-2">
+                <div class="form-group mb-2">
+                    <label for="" class="mb-1">Amortizatsiya bino</label>
+                    <input type="number" placeholder="Harajat miqdori" name="building_amount" class="form-control" 
+                    {% if design.designimmutable_set.all.6 and design.designimmutable_set.all.6.task == 'building' %}
+                        value="{{design.designimmutable_set.all.6.cost}}" {% endif %} />
+                </div>
+                <div class="form-group mb-2">
+                    <label for="" class="mb-1">Hisoblash turi</label>
+                    <select name="building_calc_type" id="" class="form-control">
+                        {% if design.designimmutable_set.all.6 and design.designimmutable_set.all.6.task == 'building' %}
+                        <option value="{{design.designimmutable_set.all.6.calc_type}}">
+                            {{design.designimmutable_set.all.6.get_calc_type_display}}</option>
+                        {% endif %}
+                        <option value="sum">So'm</option>
+                        <option value="percent">Foiz %</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="col-md-2 mb-2">
+                <div class="form-group mb-2">
+                    <label for="" class="mb-1">Amortizatsiya stanok</label>
+                    <input type="number" placeholder="Harajat miqdori" name="stanok_amount" class="form-control" 
+                    {% if design.designimmutable_set.all.7 and design.designimmutable_set.all.7.task == 'stanok' %}
+                        value="{{design.designimmutable_set.all.7.cost}}" {% endif %} />
+                </div>
+
+                <div class="form-group mb-2">
+                    <label for="" class="mb-1">Hisoblash turi</label>
+                    <select name="stanok_calc_type" id="" class="form-control">
+                        {% if design.designimmutable_set.all.7 and design.designimmutable_set.all.7.task == 'stanok' %}
+                        <option value="{{design.designimmutable_set.all.7.calc_type}}">
+                            {{design.designimmutable_set.all.7.get_calc_type_display}}</option>
+                        {% endif %}
+                        <option value="sum">So'm</option>
+                        <option value="percent">Foiz %</option>
+                    </select>
+                </div>
+            </div>
+
+
+            <div class="col-md-2 mb-2">
+                <div class="form-group mb-2">
+                    <label for="" class="mb-1">Boshqa</label>
+                    <input type="number" placeholder="Harajat miqdori" name="addition_amount" class="form-control" 
+                    {% if design.designimmutable_set.all.8 and design.designimmutable_set.all.8.task == 'addition' %}
+                        value="{{design.designimmutable_set.all.8.cost}}" {% endif %} />
+                </div>
+
+                <div class="form-group mb-2">
+                    <label for="" class="mb-1">Hisoblash turi</label>
+                    <select name="addition_calc_type" id="" class="form-control">
+                        {% if design.designimmutable_set.all.8 and design.designimmutable_set.all.8.task == 'addition' %}
+                        <option value="{{design.designimmutable_set.all.8.calc_type}}">
+                            {{design.designimmutable_set.all.8.get_calc_type_display}}</option>
+                        {% endif %}
+                        <option value="sum">So'm</option>
+                        <option value="percent">Foiz %</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <a class="btn btn-secondary" href="{% url 'superuser:design_home' %}">Ortga</a>
+        <button type="submit" class="btn btn-primary">Saqlash</button>
+    </form>
+</div>
+
+
+<script>
+    $(document).ready(function () {
+        $('.selectmultiple').select2({
+            placeholder: 'Etiketikalarni tanlang'
+        });
+    });
+</script>
+
+{% endblock content %}

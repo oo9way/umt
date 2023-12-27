@@ -5,6 +5,7 @@ from superuser.permissions import IsAdminRole
 from materials.models import *
 from superuser.forms import *
 from django.shortcuts import get_object_or_404
+from django.contrib import messages
 
 
 class HomePageView(IsAdminRole, ListView):
@@ -331,3 +332,417 @@ class LabelExportView(IsAdminRole, ListView):
         context["where"] = WHERE
 
         return context
+
+
+class DesignView(IsAdminRole, ListView):
+    model = Design
+    paginate_by = 20
+    ordering = ["-created_at"]
+    template_name = "superadmin/design/list_create.html"
+
+    def post(self, request, *args, **kwargs):
+        form = AdminDesign(request.POST)
+        design = form.save(commit=False)
+        design.save()
+        design_id = design.id
+        return redirect(reverse("superuser:design-insert-materials", args=(design_id,)))
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["form"] = AdminDesign
+        return context
+
+
+def admin_insert_design_materials(request, pk):
+    try:
+        design = Design.objects.get(id=pk)
+        form = InlineDesignField(
+            queryset=DesignField.objects.filter(design_type=design), instance=design
+        )
+
+    except:
+        messages.error(
+            request, "Formada xatolik bor, qaytadan urining", extra_tags="danger"
+        )
+        return redirect("superadmin:design_home")
+
+    if request.method == "POST":
+        form = InlineDesignField(request.POST, instance=design)
+        if form.is_valid():
+            form.save()
+            for i in range(1, 7):
+                if request.POST[f"label{i}"] != "":
+                    label = LabelType.objects.get(id=request.POST[f"label{i}"])
+                    dlb = DesignLabel.objects.create(design=design, label=label)
+                    if request.POST[f"label{i}_amount"] != "":
+                        price = float(request.POST[f"label{i}_amount"])
+                        dlb.price = price
+                        dlb.save()
+
+            if request.POST["salary_amount"] != "":
+                try:
+                    salary_amount = float(request.POST["salary_amount"])
+                except:
+                    salary_amount = 0
+            else:
+                salary_amount = 0
+
+            salary_calc_type = request.POST["salary_calc_type"]
+            DesignImmutable.objects.create(
+                name="Ish haqqi",
+                calc_type=salary_calc_type,
+                cost=salary_amount,
+                design=design,
+                task="salary",
+            )
+
+            if request.POST["energy_amount"] != "":
+                try:
+                    energy_amount = float(request.POST["energy_amount"])
+                except:
+                    energy_amount = 0
+            else:
+                energy_amount = 0
+            energy_calc_type = request.POST["energy_calc_type"]
+            DesignImmutable.objects.create(
+                name="Elektr energiya va gaz",
+                calc_type=energy_calc_type,
+                cost=energy_amount,
+                design=design,
+                task="energy",
+            )
+
+            if request.POST["oil_amount"] != "":
+                try:
+                    oil_amount = float(request.POST["oil_amount"])
+                except:
+                    oil_amount = 0
+            else:
+                oil_amount = 0
+            oil_calc_type = request.POST["oil_calc_type"]
+            DesignImmutable.objects.create(
+                name="Moy",
+                calc_type=oil_calc_type,
+                cost=oil_amount,
+                design=design,
+                task="oil",
+            )
+
+            if request.POST["brak_amount"] != "":
+                try:
+                    brak_amount = float(request.POST["brak_amount"])
+                except:
+                    brak_amount = 0
+            else:
+                brak_amount = 0
+            brak_calc_type = request.POST["brak_calc_type"]
+            DesignImmutable.objects.create(
+                name="Brak",
+                calc_type=brak_calc_type,
+                cost=brak_amount,
+                design=design,
+                task="brak",
+            )
+
+            if request.POST["different_amount"] != "":
+                try:
+                    different_amount = float(request.POST["different_amount"])
+                except:
+                    different_amount = 0
+            else:
+                different_amount = 0
+            different_calc_type = request.POST["different_calc_type"]
+            DesignImmutable.objects.create(
+                name="Har xil",
+                calc_type=different_calc_type,
+                cost=different_amount,
+                design=design,
+                task="different",
+            )
+
+            if request.POST["anothers_amount"] != "":
+                try:
+                    anothers_amount = float(request.POST["anothers_amount"])
+                except:
+                    anothers_amount = 0
+            else:
+                anothers_amount = 0
+            anothers_calc_type = request.POST["anothers_calc_type"]
+            DesignImmutable.objects.create(
+                name="Qo'shimcha",
+                calc_type=anothers_calc_type,
+                cost=anothers_amount,
+                design=design,
+                task="anothers",
+            )
+
+            if request.POST["building_amount"] != "":
+                try:
+                    building_amount = float(request.POST["building_amount"])
+                except:
+                    building_amount = 0
+            else:
+                building_amount = 0
+
+            building_calc_type = request.POST["building_calc_type"]
+            DesignImmutable.objects.create(
+                name="Amortizatsiya bino",
+                calc_type=building_calc_type,
+                cost=building_amount,
+                design=design,
+                task="building",
+            )
+
+            if request.POST["stanok_amount"] != "":
+                try:
+                    stanok_amount = float(request.POST["stanok_amount"])
+                except:
+                    stanok_amount = 0
+            else:
+                stanok_amount = 0
+            stanok_calc_type = request.POST["stanok_calc_type"]
+            DesignImmutable.objects.create(
+                name="Amortizatsiya stanok",
+                calc_type=stanok_calc_type,
+                cost=stanok_amount,
+                design=design,
+                task="stanok",
+            )
+
+            if request.POST["addition_amount"] != "":
+                try:
+                    addition_amount = float(request.POST["addition_amount"])
+                except:
+                    addition_amount = 0
+            else:
+                addition_amount = 0
+            addition_calc_type = request.POST["addition_calc_type"]
+            DesignImmutable.objects.create(
+                name="Boshqa",
+                calc_type=addition_calc_type,
+                cost=addition_amount,
+                design=design,
+                task="addition",
+            )
+
+            messages.success(request, "Dizayn muvaffaqiyatli kiritildi")
+        else:
+            messages.error(request, "Formada xatolik bor")
+
+        return redirect("superuser:design_home")
+
+    context = {"menu": "design", "form": form, "labels": LabelType.objects.all()}
+
+    return render(request, "superadmin/design/insert_material.html", context)
+
+
+def admin_edit_design_materials(request, pk):
+    try:
+        design = Design.objects.get(id=pk)
+        form = InlineDesignField(
+            queryset=DesignField.objects.filter(design_type=design), instance=design
+        )
+
+    except:
+        messages.error(
+            request, "Formada xatolik bor, qaytadan urining", extra_tags="danger"
+        )
+        return redirect("base:admin-design")
+
+    if request.method == "POST":
+        form = InlineDesignField(request.POST, instance=design)
+        if form.is_valid():
+            form.save()
+            for i in range(1, 7):
+                if request.POST[f"label{i}"] != "":
+                    try:
+                        if request.POST[f"label{i}_id"] != "":
+                            if request.POST[f"label{i}"] == "cancel":
+                                dlb_item = DesignLabel.objects.get(
+                                    id=request.POST[f"label{i}_id"]
+                                )
+                                dlb_item.delete()
+                                dlb = False
+                            else:
+                                dlb = DesignLabel.objects.get(
+                                    id=request.POST[f"label{i}_id"]
+                                )
+                        else:
+                            label = LabelType.objects.get(id=request.POST[f"label{i}"])
+                            dlb = DesignLabel.objects.create(design=design, label=label)
+
+                        if request.POST[f"label{i}_amount"] != "" and dlb != False:
+                            try:
+                                price = float(request.POST[f"label{i}_amount"])
+                                dlb.price = price
+                                dlb.save()
+                            except:
+                                pass
+
+                    except:
+                        pass
+
+            if request.POST["salary_amount"] != "":
+                try:
+                    salary_amount = float(request.POST["salary_amount"])
+                except:
+                    salary_amount = 0
+            else:
+                salary_amount = 0
+
+            salary_calc_type = request.POST["salary_calc_type"]
+            get_salary, salary_created = DesignImmutable.objects.get_or_create(
+                design=design, task="salary", name="Иш хаки"
+            )
+            get_salary.calc_type = salary_calc_type
+            get_salary.cost = salary_amount
+            get_salary.save()
+
+            if request.POST["energy_amount"] != "":
+                try:
+                    energy_amount = float(request.POST["energy_amount"])
+                except:
+                    energy_amount = 0
+            else:
+                energy_amount = 0
+
+            energy_calc_type = request.POST["energy_calc_type"]
+            get_energy, energy_created = DesignImmutable.objects.get_or_create(
+                design=design, task="energy", name="Свет ва Газ"
+            )
+            get_energy.calc_type = energy_calc_type
+            get_energy.cost = energy_amount
+            get_energy.save()
+
+            if request.POST["oil_amount"] != "":
+                try:
+                    oil_amount = float(request.POST["oil_amount"])
+                except:
+                    oil_amount = 0
+            else:
+                oil_amount = 0
+
+            oil_calc_type = request.POST["oil_calc_type"]
+            get_oil, oil_created = DesignImmutable.objects.get_or_create(
+                design=design, task="oil", name="Мой"
+            )
+            get_oil.calc_type = oil_calc_type
+            get_oil.cost = oil_amount
+            get_oil.save()
+
+            if request.POST["brak_amount"] != "":
+                try:
+                    brak_amount = float(request.POST["brak_amount"])
+                except:
+                    brak_amount = 0
+            else:
+                brak_amount = 0
+
+            brak_calc_type = request.POST["brak_calc_type"]
+            get_brak, brak_created = DesignImmutable.objects.get_or_create(
+                design=design, task="brak", name="Брак"
+            )
+            get_brak.calc_type = brak_calc_type
+            get_brak.cost = brak_amount
+            get_brak.save()
+
+            if request.POST["different_amount"] != "":
+                try:
+                    different_amount = float(request.POST["different_amount"])
+                except:
+                    different_amount = 0
+            else:
+                different_amount = 0
+
+            different_calc_type = request.POST["different_calc_type"]
+            get_different, different_created = DesignImmutable.objects.get_or_create(
+                design=design, task="different", name="Хар хил"
+            )
+            get_different.calc_type = different_calc_type
+            get_different.cost = different_amount
+            get_different.save()
+
+            if request.POST["anothers_amount"] != "":
+                try:
+                    anothers_amount = float(request.POST["anothers_amount"])
+                except:
+                    anothers_amount = 0
+            else:
+                anothers_amount = 0
+
+            anothers_calc_type = request.POST["anothers_calc_type"]
+            get_anothers, anothers_created = DesignImmutable.objects.get_or_create(
+                design=design, task="anothers", name="Кушимча"
+            )
+            get_anothers.calc_type = anothers_calc_type
+            get_anothers.cost = anothers_amount
+            get_anothers.save()
+
+            if request.POST["building_amount"] != "":
+                try:
+                    building_amount = float(request.POST["building_amount"])
+                except:
+                    building_amount = 0
+            else:
+                building_amount = 0
+
+            building_calc_type = request.POST["building_calc_type"]
+            get_building, building_created = DesignImmutable.objects.get_or_create(
+                design=design, task="building", name="Амортизация Бино"
+            )
+            get_building.calc_type = building_calc_type
+            get_building.cost = building_amount
+            get_building.save()
+
+            if request.POST["stanok_amount"] != "":
+                try:
+                    stanok_amount = float(request.POST["stanok_amount"])
+                except:
+                    stanok_amount = 0
+            else:
+                stanok_amount = 0
+            stanok_calc_type = request.POST["stanok_calc_type"]
+            get_stanok, stanok_created = DesignImmutable.objects.get_or_create(
+                design=design, task="stanok", name="Амортизация Станок"
+            )
+            get_stanok.calc_type = stanok_calc_type
+            get_stanok.cost = stanok_amount
+            get_stanok.save()
+
+            if request.POST["addition_amount"] != "":
+                try:
+                    addition_amount = float(request.POST["addition_amount"])
+                except:
+                    addition_amount = 0
+            else:
+                addition_amount = 0
+            addition_calc_type = request.POST["addition_calc_type"]
+            get_addition, addition_created = DesignImmutable.objects.get_or_create(
+                design=design, task="addition", name="Бошка"
+            )
+            get_addition.calc_type = addition_calc_type
+            get_addition.cost = addition_amount
+            get_addition.save()
+
+            messages.success(request, "Dizayn muvaffaqiyatli kiritildi")
+        else:
+            messages.error(request, "Formada xatolik bor")
+
+        return redirect("superuser:design_home")
+
+    context = {
+        "menu": "design",
+        "form": form,
+        "design": design,
+        "labels": LabelType.objects.all(),
+    }
+
+    return render(request, "superadmin/design/edit_material.html", context)
+
+
+
+def admin_design_details(request, pk):
+    design = Design.objects.get(id=pk)
+    immutables = ImmutableBalance.objects.all()
+    context = {'design': design, 'immutables': immutables}
+    return render(request, 'superadmin/design/details.html', context)

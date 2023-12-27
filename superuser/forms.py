@@ -1,5 +1,9 @@
 from django import forms
 from materials.models import (
+    Design,
+    DesignField,
+    DesignImmutable,
+    ImmutableBalance,
     LabelStorage,
     LabelType,
     MaterialStorage,
@@ -81,3 +85,53 @@ class InsertLabelTypeForm(forms.ModelForm):
         model = LabelType
         fields = ("name",)
         labels = {"name": "Etiketika nomi"}
+
+
+class AdminDesign(forms.ModelForm):
+    class Meta:
+        model = Design
+        fields = "__all__"
+        labels = {
+            "name": "Nomi",
+            "materials": "Material turi",
+            "label": "Etiketika turi",
+            "amount": "Juft miqdori",
+            "sex": "Jinsi",
+            "season": "Mavsumi",
+        }
+
+
+class AdminDesignFieldForm(forms.ModelForm):
+    class Meta:
+        model = DesignField
+        fields = "__all__"
+        labels = {"material_type": "Homashyo turi", "amount": "Miqdori"}
+
+
+InlineDesignField = forms.models.inlineformset_factory(
+    Design,
+    DesignField,
+    labels={"material_type": "Homashyo turi", "amount": "Miqdori"},
+    fields=("material_type", "amount"),
+    extra=12,
+)
+
+
+class AdminImmutables(forms.ModelForm):
+    class Meta:
+        model = DesignImmutable
+        fields = "__all__"
+        exclude = ["design"]
+        labels = {"name": "Nomi", "calc_type": "Hisoblash turi", "cost": "Qiymat"}
+
+
+class AdminAllImmutables(forms.ModelForm):
+    class Meta:
+        model = ImmutableBalance
+        fields = "__all__"
+        exclude = ["design"]
+        labels = {
+            "type": "Nomi",
+            "cost": "Qiymat",
+            "calc_type": "Hisoblash turi",
+        }

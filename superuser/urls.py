@@ -1,5 +1,6 @@
 from django.urls import path
 from superuser.views import (
+    DesignView,
     HomePageView,
     LabelExportView,
     LabelHistoryListView,
@@ -20,6 +21,9 @@ from superuser.views import (
     SpareTypeUpdateView,
     SpareHistoryListView,
     SpareExportView,
+    admin_design_details,
+    admin_edit_design_materials,
+    admin_insert_design_materials,
 )
 
 from superuser.utils.generate_xls import *
@@ -91,7 +95,7 @@ urlpatterns += [
     ),
 ]
 
-# SPARE VIEWS
+# LABEL VIEWS
 urlpatterns += [
     path("dashboard/label/", LabelListView.as_view(), name="label_list"),
     path("dashboard/label/types/", LabelTypeListView.as_view(), name="label_types"),
@@ -114,6 +118,28 @@ urlpatterns += [
         "dashboard/label/export/",
         LabelExportView.as_view(),
         name="label_export",
+    ),
+]
+
+
+# DESIGN VIEWS
+urlpatterns += [
+    path("dashboard/design/home/", DesignView.as_view(), name="design_home"),
+    path(
+        "dashboard/design/insert-materials/<int:pk>/",
+        admin_insert_design_materials,
+        name="design-insert-materials",
+    ),
+    path(
+        "dashboard/design/edit-materials/<int:pk>/",
+        admin_edit_design_materials,
+        name="design-edit-materials",
+    ),
+    
+    path(
+        "dashboard/design/details/<int:pk>/",
+        admin_design_details,
+        name="design-details",
     ),
 ]
 

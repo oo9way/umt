@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+
+{% block sidebar_items %}
+{% include '../sidebar.html' %}
+{% endblock sidebar_items %}
+
+
+{% block choice %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+{% endblock choice %}
+
+
+{% block content %}
+<div class="card p-4 mt-3">
+    <div class="card-title h3">{{design.name}}</div>
+    <table class="table mb-4" id="materialTable">
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Tur</th>
+                <th>Miqdor</th>
+                <th>Umumiy narx</th>
+                <th>Pul birligi</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for material in design.designfield_set.all %}
+            <tr>
+                <td>{{material}}</td>
+                <td>Serio</td>
+                <td>{{material.amount|div:design.amount}} {{material.material_type.get_amount_type_display}}</td>
+                <td>
+                    {% if material.material_type.materialstorage_set.all.count > 0%}
+                        {{ material.material_type.materialstorage_set.last.price|clear_mul_serio:material.amount}}
+                    {% else %}
+                        0
+                    {% endif %}
+                </td>
+                <td>
+                    {% if material.material_type.materialstorage_set.all.count > 0%}
+                    {{ material.material_type.materialstorage_set.last.get_price_type_display}}
+                    {% else %}
+                    0
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            {% for label in design.designlabel_set.all %}
+            <tr>
+                <td>{{label.label}}</td>
+                <td>Etiketika</td>
+                <td>1</td>
+                <td>
+                    {% if label.price %}
+                        {{label.price}}
+                    {% else %}
+                        {{label.label.labelstorage_set.first.price}}
+                    {% endif %}
+                </td>
+                <td>
+                    {% if label.price %}
+                        UZS
+                    {% else %}
+                        {{label.label.labelstorage_set.first.get_price_type_display}}
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            {% for immut in design.designimmutable_set.all %}
+            <tr>
+                <td>{{immut.name}}</td>
+                <td>O'zgarmas</td>
+                <td>1</td>
+                <td>{{immut.cost}}</td>
+                <td>{% if immut.calc_type == 'sum' %} UZS {% else %} % {% endif %}</td>
+            </tr>
+            {% endfor %}
+           
+
+        </tbody>
+
+    </table>
+    <div class="mb-1">
+        <b>Umumiy og'irlik : <span id="weight"></span></b>
+    </div>
+    <div class="d-flex mb-3">
+        <b>Umumiy</b>
+        <div class="mx-3">
+            <b class="font-weight-bold" id="uzs_total">$</b>
+        </div>
+        +
+        <div class="mx-3">
+            <b class="font-weight-bold" id="usd_total">$</b>
+        </div>
+        x
+        <div class="mx-3">
+            <b class="font-weight-bold" id="usd_to_uzs"></b>
+        </div>
+        +
+        <div class="mx-3">
+            <b class="font-weight-bold" id="percent_total">%</b>
+        </div>
+        =
+        <div class="mx-3">
+            <b class="font-weight-bold" id="end_total">%</b>
+        </div>
+    </div>
+
+</div>
+
+
+<script>
+    var table = document.getElementById("materialTable");
+    var totalUZS = 0;
+    var totalUSD = 0;
+    var totalWeight = 0;
+    for (var i = 1; i < table.rows.length; i++) {
+        let txt = table.rows[i].cells[3].innerText
+        if (table.rows[i].cells[1].innerText === 'Serio') {
+            totalWeight += parseFloat(table.rows[i].cells[2].innerText.replace(/,/g, '.'));
+        }
+        if (table.rows[i].cells[4].innerText === 'UZS') {
+            totalUZS += parseFloat(table.rows[i].cells[3].innerText.replace(/,/g, '.'));
+        }
+        if (table.rows[i].cells[4].innerText === 'USD') {
+            console.log(table.rows[i].cells[3].innerText.replace(/,/g, '.'))
+            totalUSD += parseFloat(table.rows[i].cells[3].innerText.replace(/,/g, '.'));
+        }
+
+
+    }
+
+    totalUSD = totalUSD / parseFloat('{{design.amount}}')
+
+    let percent = 0;
+    for (var i = 1; i < table.rows.length; i++) {
+
+        if (table.rows[i].cells[4].innerText === '%') {
+            percent += parseFloat(table.rows[i].cells[3].innerText);
+        }
+    }
+    let convert = parseFloat('{{exchange}}');
+    let total_end = parseFloat(convert) * parseFloat(totalUSD) + parseFloat(totalUZS)
+    let with_percent = total_end / 100 * (100 + percent)
+
+    document.getElementById('uzs_total').innerHTML = totalUZS + ' so`m';
+    document.getElementById('usd_total').innerHTML = totalUSD + ' $';
+    document.getElementById('usd_to_uzs').innerHTML = parseFloat(convert) + ' so`m';
+    document.getElementById('percent_total').innerHTML = percent.toLocaleString() + '%';
+    document.getElementById('end_total').innerHTML = parseFloat(with_percent) + ' so`m';
+
+    document.getElementById('weight').innerHTML = totalWeight + ' gramm'
+
+</script>
+
+
+
+{% endblock content %}
