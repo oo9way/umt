@@ -440,8 +440,8 @@ class DesignImmutable(models.Model):
 
 
 class DesignField(models.Model):
-    material_type = models.ForeignKey(MaterialType, on_delete=models.PROTECT)
-    design_type = models.ForeignKey(Design, on_delete=models.PROTECT)
+    material_type = models.ForeignKey(MaterialType, on_delete=models.CASCADE)
+    design_type = models.ForeignKey(Design, on_delete=models.CASCADE)
     amount = models.CharField(max_length=255, default="0")
 
     def __str__(self):
@@ -450,7 +450,7 @@ class DesignField(models.Model):
 
 class DesignLabel(models.Model):
     design = models.ForeignKey(Design, on_delete=models.CASCADE)
-    label = models.ForeignKey(LabelType, on_delete=models.PROTECT)
+    label = models.ForeignKey(LabelType, on_delete=models.CASCADE)
 
     price = models.CharField(max_length=255, null=True, blank=True)
 
@@ -463,3 +463,11 @@ class ImmutableBalance(models.Model):
 
     def __str__(self) -> str:
         return self.type
+
+
+class Exchange(models.Model):
+    usd_currency = models.CharField(max_length=255, default=0)
+    day = models.DateField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return self.usd_currency

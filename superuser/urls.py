@@ -21,6 +21,7 @@ from superuser.views import (
     SpareTypeUpdateView,
     SpareHistoryListView,
     SpareExportView,
+    DesignDeleteView,
     admin_design_details,
     admin_edit_design_materials,
     admin_insert_design_materials,
@@ -141,6 +142,8 @@ urlpatterns += [
         admin_design_details,
         name="design-details",
     ),
+    path("dashboard/design/delete/<int:pk>/", DesignDeleteView.as_view(), name="design_delete"),
+    
 ]
 
 

@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "django_rename_app",
     "import_export",
     "django.contrib.humanize",
+    'mathfilters',
     "user",
     "app",
     "superuser",

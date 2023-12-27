@@ -364,7 +364,10 @@ def admin_insert_design_materials(request, pk):
         messages.error(
             request, "Formada xatolik bor, qaytadan urining", extra_tags="danger"
         )
-        return redirect("superadmin:design_home")
+        return redirect("superuser:design_home")
+    
+    if design.designfield_set.count() > 0:
+        return redirect("superuser:design_home")
 
     if request.method == "POST":
         form = InlineDesignField(request.POST, instance=design)
@@ -592,7 +595,7 @@ def admin_edit_design_materials(request, pk):
 
             salary_calc_type = request.POST["salary_calc_type"]
             get_salary, salary_created = DesignImmutable.objects.get_or_create(
-                design=design, task="salary", name="Иш хаки"
+                design=design, task="salary", name="Ish haqqi"
             )
             get_salary.calc_type = salary_calc_type
             get_salary.cost = salary_amount
@@ -608,7 +611,7 @@ def admin_edit_design_materials(request, pk):
 
             energy_calc_type = request.POST["energy_calc_type"]
             get_energy, energy_created = DesignImmutable.objects.get_or_create(
-                design=design, task="energy", name="Свет ва Газ"
+                design=design, task="energy", name="Elektr energiya va gaz"
             )
             get_energy.calc_type = energy_calc_type
             get_energy.cost = energy_amount
@@ -624,7 +627,7 @@ def admin_edit_design_materials(request, pk):
 
             oil_calc_type = request.POST["oil_calc_type"]
             get_oil, oil_created = DesignImmutable.objects.get_or_create(
-                design=design, task="oil", name="Мой"
+                design=design, task="oil", name="Moy"
             )
             get_oil.calc_type = oil_calc_type
             get_oil.cost = oil_amount
@@ -640,7 +643,7 @@ def admin_edit_design_materials(request, pk):
 
             brak_calc_type = request.POST["brak_calc_type"]
             get_brak, brak_created = DesignImmutable.objects.get_or_create(
-                design=design, task="brak", name="Брак"
+                design=design, task="brak", name="Brak"
             )
             get_brak.calc_type = brak_calc_type
             get_brak.cost = brak_amount
@@ -656,7 +659,7 @@ def admin_edit_design_materials(request, pk):
 
             different_calc_type = request.POST["different_calc_type"]
             get_different, different_created = DesignImmutable.objects.get_or_create(
-                design=design, task="different", name="Хар хил"
+                design=design, task="different", name="Har xil"
             )
             get_different.calc_type = different_calc_type
             get_different.cost = different_amount
@@ -672,7 +675,7 @@ def admin_edit_design_materials(request, pk):
 
             anothers_calc_type = request.POST["anothers_calc_type"]
             get_anothers, anothers_created = DesignImmutable.objects.get_or_create(
-                design=design, task="anothers", name="Кушимча"
+                design=design, task="anothers", name="Qo'shimcha"
             )
             get_anothers.calc_type = anothers_calc_type
             get_anothers.cost = anothers_amount
@@ -688,7 +691,7 @@ def admin_edit_design_materials(request, pk):
 
             building_calc_type = request.POST["building_calc_type"]
             get_building, building_created = DesignImmutable.objects.get_or_create(
-                design=design, task="building", name="Амортизация Бино"
+                design=design, task="building", name="Amortizatsiya bino"
             )
             get_building.calc_type = building_calc_type
             get_building.cost = building_amount
@@ -703,7 +706,7 @@ def admin_edit_design_materials(request, pk):
                 stanok_amount = 0
             stanok_calc_type = request.POST["stanok_calc_type"]
             get_stanok, stanok_created = DesignImmutable.objects.get_or_create(
-                design=design, task="stanok", name="Амортизация Станок"
+                design=design, task="stanok", name="Amortizatsiya stanok"
             )
             get_stanok.calc_type = stanok_calc_type
             get_stanok.cost = stanok_amount
@@ -718,7 +721,7 @@ def admin_edit_design_materials(request, pk):
                 addition_amount = 0
             addition_calc_type = request.POST["addition_calc_type"]
             get_addition, addition_created = DesignImmutable.objects.get_or_create(
-                design=design, task="addition", name="Бошка"
+                design=design, task="addition", name="Boshqa"
             )
             get_addition.calc_type = addition_calc_type
             get_addition.cost = addition_amount
@@ -740,9 +743,15 @@ def admin_edit_design_materials(request, pk):
     return render(request, "superadmin/design/edit_material.html", context)
 
 
-
 def admin_design_details(request, pk):
     design = Design.objects.get(id=pk)
     immutables = ImmutableBalance.objects.all()
-    context = {'design': design, 'immutables': immutables}
+    exchange = Exchange.objects.last()
+    context = {'design': design, 'immutables': immutables, 'exchange':exchange}
     return render(request, 'superadmin/design/details.html', context)
+
+
+class DesignDeleteView(IsAdminRole, DeleteView):
+    model = Design
+    success_url = reverse_lazy("superuser:design_home")
+    template_name = "superadmin/design/delete.html"

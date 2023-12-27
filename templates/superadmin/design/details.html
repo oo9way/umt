@@ -1,6 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load crispy_forms_tags %}
+{% load mathfilters %}
+{% load calcs_tags %}
 {% load humanize %}
 
 {% block sidebar_items %}
@@ -33,7 +35,7 @@
             <tr>
                 <td>{{material}}</td>
                 <td>Serio</td>
-                <td>{{material.amount|div:design.amount}} {{material.material_type.get_amount_type_display}}</td>
+                <td>{{material.amount|dec_div:design.amount}} <b>gr</b></td>
                 <td>
                     {% if material.material_type.materialstorage_set.all.count > 0%}
                         {{ material.material_type.materialstorage_set.last.price|clear_mul_serio:material.amount}}
@@ -110,6 +112,10 @@
             <b class="font-weight-bold" id="end_total">%</b>
         </div>
     </div>
+    <div>
+    <a href="{% url 'superuser:design_home' %}" class="btn btn-primary">Ortga</a>
+
+    </div>
 
 </div>
 
@@ -125,10 +131,10 @@
             totalWeight += parseFloat(table.rows[i].cells[2].innerText.replace(/,/g, '.'));
         }
         if (table.rows[i].cells[4].innerText === 'UZS') {
-            totalUZS += parseFloat(table.rows[i].cells[3].innerText.replace(/,/g, '.'));
+            totalUZS += parseFloat(table.rows[i].cells[3].innerText)
+            table.rows[i].cells[3].innerText.replace(/,/g, '.');
         }
         if (table.rows[i].cells[4].innerText === 'USD') {
-            console.log(table.rows[i].cells[3].innerText.replace(/,/g, '.'))
             totalUSD += parseFloat(table.rows[i].cells[3].innerText.replace(/,/g, '.'));
         }
 
@@ -149,10 +155,10 @@
     let with_percent = total_end / 100 * (100 + percent)
 
     document.getElementById('uzs_total').innerHTML = totalUZS + ' so`m';
-    document.getElementById('usd_total').innerHTML = totalUSD + ' $';
+    document.getElementById('usd_total').innerHTML = totalUSD.toFixed(3) + ' $';
     document.getElementById('usd_to_uzs').innerHTML = parseFloat(convert) + ' so`m';
     document.getElementById('percent_total').innerHTML = percent.toLocaleString() + '%';
-    document.getElementById('end_total').innerHTML = parseFloat(with_percent) + ' so`m';
+    document.getElementById('end_total').innerHTML = parseFloat(with_percent).toFixed(3) + ' so`m';
 
     document.getElementById('weight').innerHTML = totalWeight + ' gramm'
 
