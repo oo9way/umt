@@ -1,6 +1,10 @@
+from typing import Any
+from django.db.models.query import QuerySet
+from django.http import HttpRequest
+from django.http.response import HttpResponse as HttpResponse
 from django.urls import reverse, reverse_lazy
 from django.shortcuts import render, redirect
-from django.views.generic import ListView, View, UpdateView, DeleteView
+from django.views.generic import ListView, View, UpdateView, DeleteView, DetailView
 from superuser.permissions import IsAdminRole
 from materials.models import *
 from superuser.forms import *
@@ -346,6 +350,7 @@ class DesignView(IsAdminRole, ListView):
         design = form.save(commit=False)
         design.save()
         design_id = design.id
+        
         return redirect(reverse("superuser:design-insert-materials", args=(design_id,)))
 
 
@@ -382,187 +387,27 @@ class DesignView(IsAdminRole, ListView):
 def admin_insert_design_materials(request, pk):
     try:
         design = Design.objects.get(id=pk)
-        form = InlineDesignField(
-            queryset=DesignField.objects.filter(design_type=design), instance=design
-        )
+        
+        
+        if design.designfield_set.count() == 0:
+            material_type = MaterialType.objects.all()
+            design_fields = []
+            for mt in material_type:
+                design_fields.append(
+                    DesignField(
+                        material_type=mt,
+                        design_type=design
+                    )
+                )
+            DesignField.objects.bulk_create(design_fields)
+        return redirect(reverse("superuser:design-edit-materials", args=(pk,)))
+        
 
     except:
         messages.error(
             request, "Formada xatolik bor, qaytadan urining", extra_tags="danger"
         )
         return redirect("superuser:design_home")
-    
-    if design.designfield_set.count() > 0:
-        return redirect("superuser:design_home")
-
-    if request.method == "POST":
-        form = InlineDesignField(request.POST, instance=design)
-        if form.is_valid():
-            form.save()
-            for i in range(1, 7):
-                if request.POST[f"label{i}"] != "":
-                    label = LabelType.objects.get(id=request.POST[f"label{i}"])
-                    dlb = DesignLabel.objects.create(design=design, label=label)
-                    if request.POST[f"label{i}_amount"] != "":
-                        price = float(request.POST[f"label{i}_amount"])
-                        dlb.price = price
-                        dlb.save()
-
-            if request.POST["salary_amount"] != "":
-                try:
-                    salary_amount = float(request.POST["salary_amount"])
-                except:
-                    salary_amount = 0
-            else:
-                salary_amount = 0
-
-            salary_calc_type = request.POST["salary_calc_type"]
-            DesignImmutable.objects.create(
-                name="Ish haqqi",
-                calc_type=salary_calc_type,
-                cost=salary_amount,
-                design=design,
-                task="salary",
-            )
-
-            if request.POST["energy_amount"] != "":
-                try:
-                    energy_amount = float(request.POST["energy_amount"])
-                except:
-                    energy_amount = 0
-            else:
-                energy_amount = 0
-            energy_calc_type = request.POST["energy_calc_type"]
-            DesignImmutable.objects.create(
-                name="Elektr energiya va gaz",
-                calc_type=energy_calc_type,
-                cost=energy_amount,
-                design=design,
-                task="energy",
-            )
-
-            if request.POST["oil_amount"] != "":
-                try:
-                    oil_amount = float(request.POST["oil_amount"])
-                except:
-                    oil_amount = 0
-            else:
-                oil_amount = 0
-            oil_calc_type = request.POST["oil_calc_type"]
-            DesignImmutable.objects.create(
-                name="Moy",
-                calc_type=oil_calc_type,
-                cost=oil_amount,
-                design=design,
-                task="oil",
-            )
-
-            if request.POST["brak_amount"] != "":
-                try:
-                    brak_amount = float(request.POST["brak_amount"])
-                except:
-                    brak_amount = 0
-            else:
-                brak_amount = 0
-            brak_calc_type = request.POST["brak_calc_type"]
-            DesignImmutable.objects.create(
-                name="Brak",
-                calc_type=brak_calc_type,
-                cost=brak_amount,
-                design=design,
-                task="brak",
-            )
-
-            if request.POST["different_amount"] != "":
-                try:
-                    different_amount = float(request.POST["different_amount"])
-                except:
-                    different_amount = 0
-            else:
-                different_amount = 0
-            different_calc_type = request.POST["different_calc_type"]
-            DesignImmutable.objects.create(
-                name="Har xil",
-                calc_type=different_calc_type,
-                cost=different_amount,
-                design=design,
-                task="different",
-            )
-
-            if request.POST["anothers_amount"] != "":
-                try:
-                    anothers_amount = float(request.POST["anothers_amount"])
-                except:
-                    anothers_amount = 0
-            else:
-                anothers_amount = 0
-            anothers_calc_type = request.POST["anothers_calc_type"]
-            DesignImmutable.objects.create(
-                name="Qo'shimcha",
-                calc_type=anothers_calc_type,
-                cost=anothers_amount,
-                design=design,
-                task="anothers",
-            )
-
-            if request.POST["building_amount"] != "":
-                try:
-                    building_amount = float(request.POST["building_amount"])
-                except:
-                    building_amount = 0
-            else:
-                building_amount = 0
-
-            building_calc_type = request.POST["building_calc_type"]
-            DesignImmutable.objects.create(
-                name="Amortizatsiya bino",
-                calc_type=building_calc_type,
-                cost=building_amount,
-                design=design,
-                task="building",
-            )
-
-            if request.POST["stanok_amount"] != "":
-                try:
-                    stanok_amount = float(request.POST["stanok_amount"])
-                except:
-                    stanok_amount = 0
-            else:
-                stanok_amount = 0
-            stanok_calc_type = request.POST["stanok_calc_type"]
-            DesignImmutable.objects.create(
-                name="Amortizatsiya stanok",
-                calc_type=stanok_calc_type,
-                cost=stanok_amount,
-                design=design,
-                task="stanok",
-            )
-
-            if request.POST["addition_amount"] != "":
-                try:
-                    addition_amount = float(request.POST["addition_amount"])
-                except:
-                    addition_amount = 0
-            else:
-                addition_amount = 0
-            addition_calc_type = request.POST["addition_calc_type"]
-            DesignImmutable.objects.create(
-                name="Boshqa",
-                calc_type=addition_calc_type,
-                cost=addition_amount,
-                design=design,
-                task="addition",
-            )
-
-            messages.success(request, "Dizayn muvaffaqiyatli kiritildi")
-        else:
-            messages.error(request, "Formada xatolik bor")
-
-        return redirect("superuser:design_home")
-
-    context = {"menu": "design", "form": form, "labels": LabelType.objects.all()}
-
-    return render(request, "superadmin/design/insert_material.html", context)
 
 
 def admin_edit_design_materials(request, pk):
@@ -778,6 +623,107 @@ def admin_design_details(request, pk):
 
 
 class DesignDeleteView(IsAdminRole, DeleteView):
+    
     model = Design
     success_url = reverse_lazy("superuser:design_home")
     template_name = "superadmin/design/delete.html"
+
+
+class ProductionMaterialView(IsAdminRole, ListView):
+    model = ProductionMaterialStorage
+    paginate_by = 20
+    ordering = ["-created_at"]
+    template_name = "superadmin/production/material_list_create.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = ImportMaterialToProduction
+        return context
+    
+    def post(self, request, *args, **kwargs):
+        material = MaterialStorage.objects.get(id=request.POST.get('material'))
+        if float(material.amount) >= float(request.POST.get('amount')):
+            pm = ProductionMaterialStorage.objects.create(
+                material=material,
+                price=material.price,
+                price_type=material.price_type,
+                amount=request.POST.get('amount'),
+                is_active='active'
+            )
+            
+            ProductionMaterialStorageHistory.objects.create(
+                executor = request.user,
+                production_material = pm,
+                action = 'import',
+                amount = request.POST.get('amount'),
+                amount_type = material.amount_type,
+                price=material.price,
+                price_type=material.price_type,
+                where='production'
+                
+            )
+            
+            MaterialStorageHistory.objects.create(
+                executor = request.user,
+                material = material.material,
+                action = 'export',
+                amount = request.POST.get('amount'),
+                amount_type = material.amount_type,
+                price=material.price,
+                price_type=material.price_type,
+                where='production'
+            )
+            
+            material.amount = float(material.amount) - float(request.POST.get('amount'))
+            material.save()
+        
+        return redirect('superuser:production_material')
+    
+
+class ProductionMaterialHistory(IsAdminRole, ListView):
+    model = ProductionMaterialStorageHistory
+    paginate_by = 20
+    ordering = ["-created_at"]
+    template_name = "superadmin/production/history.html"
+    
+    def get_queryset(self):
+        date_from  = self.request.GET.get('date_from')
+        date_to  = self.request.GET.get('date_to')
+        queryset = super().get_queryset()
+        if date_from:
+            queryset = queryset.filter(created_at__gte=date_from)
+        
+        if date_to:
+            queryset = queryset.filter(created_at__lte=date_to)
+            
+        return queryset
+    
+
+class BrakListView(IsAdminRole, ListView):
+    model = Brak
+    paginate_by = 20
+    ordering = ["-id"]
+    template_name = "superadmin/production/brak_list_create.html"
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        queryset = queryset.filter(status='active')
+        return queryset
+    
+    
+class SellBrakView(IsAdminRole, DetailView):
+    model = Brak
+    template_name = "superadmin/production/sell_brak.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = SellBrak
+        return context
+    
+    def post(self, request, pk, *args, **kwargs):
+        brak = Brak.objects.get(id=pk)
+        form = SellBrak(request.POST)
+        if form.is_valid():
+            brak.status ='sold'
+            brak.save()
+            return redirect('superuser:brak_list')

@@ -331,10 +331,16 @@
             <div class="col-md-2 mb-2">
                 <div class="form-group mb-2">
                     <label for="" class="mb-1">Ish haqi</label>
-                    <input type="number" placeholder="Ish haqi miqdori" name="salary_amount" class="form-control" 
-                    {%if design.designimmutable_set.all.0 and design.designimmutable_set.all.0.task == 'salary'%}
-                        value="{{design.designimmutable_set.all.0.cost}}" 
-                    {%endif%} />
+                    <input 
+                        type="number" 
+                        placeholder="Ish haqi miqdori" 
+                        name="salary_amount" class="form-control" 
+                        {%if design.designimmutable_set.all.0 and design.designimmutable_set.all.0.task == 'salary'%}
+                        value="{{design.designimmutable_set.all.0.cost}}"
+                        {% else %}
+                        value="550"
+                        {%endif%} 
+                    />
                 </div>
                 <div class="form-group mb-2">
                     <label for="" class="mb-1">Hisoblash turi</label>
@@ -353,9 +359,17 @@
             <div class="col-md-2 mb-2">
                 <div class="form-group mb-2">
                     <label for="" class="mb-1">Svet va gaz</label>
-                    <input type="number" placeholder="Harajat miqdori" name="energy_amount" class="form-control" 
-                    {% if design.designimmutable_set.all.1 and design.designimmutable_set.all.1.task == 'energy' %}
-                        value="{{design.designimmutable_set.all.1.cost}}" {% endif %} />
+                    <input 
+                        type="number" 
+                        placeholder="Harajat miqdori" 
+                        name="energy_amount" 
+                        class="form-control" 
+                        {% if design.designimmutable_set.all.1 and design.designimmutable_set.all.1.task == 'energy' %}
+                        value="{{design.designimmutable_set.all.1.cost}}" 
+                        {% else %}
+                        value="130"
+                        {% endif %} 
+                    />
                 </div>
 
                 <div class="form-group mb-2">
@@ -374,9 +388,16 @@
             <div class="col-md-2 mb-2">
                 <div class="form-group mb-2">
                     <label for="" class="mb-1">Moy</label>
-                    <input type="number" placeholder="Harajat miqdori" name="oil_amount" class="form-control" 
-                    {% if design.designimmutable_set.all.2 and design.designimmutable_set.all.2.task == 'oil' %}
-                        value="{{design.designimmutable_set.all.2.cost}}" {% endif %} />
+                    <input 
+                        type="number" 
+                        placeholder="Harajat miqdori" 
+                        name="oil_amount" 
+                        class="form-control" 
+                        {% if design.designimmutable_set.all.2 and design.designimmutable_set.all.2.task == 'oil' %}
+                        value="{{design.designimmutable_set.all.2.cost}}" 
+                        {% else %}
+                        value="100"
+                        {% endif %} />
                 </div>
 
                 <div class="form-group mb-2">
@@ -396,9 +417,16 @@
             <div class="col-md-2 mb-2">
                 <div class="form-group mb-2">
                     <label for="" class="mb-1">Brak</label>
-                    <input type="number" placeholder="Harajat miqdori" name="brak_amount" class="form-control" 
-                    {% if design.designimmutable_set.all.3 and design.designimmutable_set.all.3.task == 'brak' %}
-                        value="{{design.designimmutable_set.all.3.cost}}" {% endif %} />
+                    <input 
+                        type="number" 
+                        placeholder="Harajat miqdori" 
+                        name="brak_amount" 
+                        class="form-control" 
+                        {% if design.designimmutable_set.all.3 and design.designimmutable_set.all.3.task == 'brak' %}
+                        value="{{design.designimmutable_set.all.3.cost}}" 
+                        {% else %}
+                        value="10"
+                        {% endif %} />
                 </div>
 
                 <div class="form-group mb-2">
@@ -407,6 +435,9 @@
                         {% if design.designimmutable_set.all.3 and design.designimmutable_set.all.3.task == 'brak' %}
                         <option value="{{design.designimmutable_set.all.3.calc_type}}">
                             {{design.designimmutable_set.all.3.get_calc_type_display}}</option>
+                            {% else %}
+                        <option value="percent">Foiz %</option>
+
                         {% endif %}
                         <option value="sum">So'm</option>
                         <option value="percent">Foiz %</option>
@@ -417,9 +448,16 @@
             <div class="col-md-2 mb-2">
                 <div class="form-group mb-2">
                     <label for="" class="mb-1">Har xil</label>
-                    <input type="number" placeholder="Harajat miqdori" name="different_amount" class="form-control" 
-                    {% if design.designimmutable_set.all.4 and design.designimmutable_set.all.4.task == 'different' %}
-                        value="{{design.designimmutable_set.all.4.cost}}" {% endif %} />
+                    <input 
+                        type="number" 
+                        placeholder="Harajat miqdori" 
+                        name="different_amount" 
+                        class="form-control" 
+                        {% if design.designimmutable_set.all.4 and design.designimmutable_set.all.4.task == 'different' %}
+                        value="{{design.designimmutable_set.all.4.cost}}" 
+                        {% else %}
+                        value="120"
+                        {% endif %} />
                 </div>
 
                 <div class="form-group mb-2">
@@ -467,19 +505,27 @@
             <div class="col-md-2 mb-2">
                 <div class="form-group mb-2">
                     <label for="" class="mb-1">Amortizatsiya bino</label>
-                    <input type="number" placeholder="Harajat miqdori" name="building_amount" class="form-control" 
-                    {% if design.designimmutable_set.all.6 and design.designimmutable_set.all.6.task == 'building' %}
-                        value="{{design.designimmutable_set.all.6.cost}}" {% endif %} />
+                    <input 
+                        type="number" 
+                        placeholder="Harajat miqdori" 
+                        name="building_amount" 
+                        class="form-control" 
+                        {% if design.designimmutable_set.all.6 and design.designimmutable_set.all.6.task == 'building' %}
+                        value="{{design.designimmutable_set.all.6.cost}}" 
+                        {% else %}
+                        value="7"
+                        {% endif %} />
                 </div>
                 <div class="form-group mb-2">
                     <label for="" class="mb-1">Hisoblash turi</label>
                     <select name="building_calc_type" id="" class="form-control">
                         {% if design.designimmutable_set.all.6 and design.designimmutable_set.all.6.task == 'building' %}
-                        <option value="{{design.designimmutable_set.all.6.calc_type}}">
+                            <option value="{{design.designimmutable_set.all.6.calc_type}}">
                             {{design.designimmutable_set.all.6.get_calc_type_display}}</option>
+                        {% else %}
+                            <option value="percent">Foiz %</option>
                         {% endif %}
                         <option value="sum">So'm</option>
-                        <option value="percent">Foiz %</option>
                     </select>
                 </div>
 
@@ -488,9 +534,19 @@
             <div class="col-md-2 mb-2">
                 <div class="form-group mb-2">
                     <label for="" class="mb-1">Amortizatsiya stanok</label>
-                    <input type="number" placeholder="Harajat miqdori" name="stanok_amount" class="form-control" 
-                    {% if design.designimmutable_set.all.7 and design.designimmutable_set.all.7.task == 'stanok' %}
-                        value="{{design.designimmutable_set.all.7.cost}}" {% endif %} />
+                    <input 
+                        type="number" 
+                        placeholder="Harajat miqdori" 
+                        name="stanok_amount" 
+                        
+                        class="form-control" 
+                        
+                        {% if design.designimmutable_set.all.7 and design.designimmutable_set.all.7.task == 'stanok' %}
+                        value="{{design.designimmutable_set.all.7.cost}}" 
+                        {% else %}
+                        value="7"
+                        {% endif %} 
+                        />
                 </div>
 
                 <div class="form-group mb-2">
@@ -499,9 +555,10 @@
                         {% if design.designimmutable_set.all.7 and design.designimmutable_set.all.7.task == 'stanok' %}
                         <option value="{{design.designimmutable_set.all.7.calc_type}}">
                             {{design.designimmutable_set.all.7.get_calc_type_display}}</option>
+                        {% else %}
+                        <option value="percent">Foiz %</option>
                         {% endif %}
                         <option value="sum">So'm</option>
-                        <option value="percent">Foiz %</option>
                     </select>
                 </div>
             </div>

@@ -29,9 +29,10 @@ WHERE = (
     ("null", "--------"),
     ("material", "Homashyo ombori"),
     ("label", "Etiketika ombori"),
+    ("production", "Ishlab chiqarish"),
     ("spare", "Ehtiyot qism ombori"),
     ("yaim", "Yarim tayyor mahsulot"),
-    ("production", "Tayyor mahsulot ombori"),
+    ("product", "Tayyor mahsulot ombori"),
     ("storage", "Mahsulot ombori"),
 )
 
@@ -79,6 +80,9 @@ class MaterialStorage(models.Model):
 
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.material} - {self.amount} {self.get_amount_type_display()}"
 
     @classmethod
     def import_material(cls, request):
@@ -153,9 +157,6 @@ class MaterialStorage(models.Model):
             amount_type=material.amount_type,
             where="material",
         )
-
-    def __str__(self):
-        return self.material.name
 
 
 # SPARE TYPES, STORAGE AND HISTORY
@@ -471,3 +472,96 @@ class Exchange(models.Model):
 
     def __str__(self) -> str:
         return self.usd_currency
+    
+    
+    
+# PRODUCTION
+class ProductionMaterialStorage(models.Model):
+    material = models.ForeignKey(
+        MaterialStorage, on_delete=models.PROTECT, null=True, blank=True)
+    price = models.CharField(max_length=600, default=0)
+    price_type = models.CharField(
+        choices=CURRENCIES, default='usd', max_length=3)
+    amount = models.CharField(max_length=255)
+    is_active = models.CharField(
+        choices=ACTIVE, default='pending', max_length=8)
+
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class ProductionMaterialStorageHistory(models.Model):
+    executor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    production_material = models.ForeignKey(ProductionMaterialStorage, on_delete=models.SET_NULL, null=True)
+
+    action = models.CharField(choices=ACTION_TYPES, max_length=9)
+    amount = models.CharField(default="0", max_length=255)
+    amount_type = models.CharField(choices=AMOUNTS, max_length=5, default="point")
+    price = models.CharField(max_length=255, blank=True)
+    price_type = models.CharField(choices=CURRENCIES, default="usd", max_length=5)
+    where = models.CharField(choices=WHERE, max_length=16, default="null")
+
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class Production(models.Model):
+    design_type = models.ForeignKey(Design, on_delete=models.PROTECT)
+    amount = models.CharField(max_length=255, default='0')
+    price = models.CharField(max_length=255)
+    comment = models.CharField(max_length=255, default="Izoh qoldiring")
+    is_active = models.CharField(
+        choices=ACTIVE, default='pending', max_length=8)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.design_type.name
+
+
+class ProductionHistory(models.Model):
+
+    executor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    production = models.ForeignKey(Production, on_delete=models.SET_NULL, null=True)
+
+    action = models.CharField(choices=ACTION_TYPES, max_length=9)
+    amount = models.CharField(default="0", max_length=255)
+    amount_type = models.CharField(choices=AMOUNTS, max_length=5, default="point")
+    price = models.CharField(max_length=255, blank=True)
+    price_type = models.CharField(choices=CURRENCIES, default="usd", max_length=5)
+    where = models.CharField(choices=WHERE, max_length=16, default="null")
+
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class Brak(models.Model):
+    SORT_TYPES = (
+        ('second', 'Ikkinchi sort'),
+        ('third', 'Uchinchi sort')
+    )
+
+    STATUS_TYPES = (
+        ('active', "Faol"),
+        ('sold', "Sotilgan")
+    )
+
+    design = models.ForeignKey(
+        Design, on_delete=models.PROTECT, null=True, blank=True)
+
+    gr_amount = models.CharField(max_length=255, default=0)
+    per_amount = models.CharField(max_length=255, default=0)
+
+    status = models.CharField(max_length=20, choices=STATUS_TYPES)
+    sort_type = models.CharField(choices=SORT_TYPES, max_length=15)
+    date = models.DateTimeField(auto_now_add=True)
+
+
+class ProductionWorker(models.Model):
+    name = models.CharField(max_length=255)
+    phone = models.CharField(max_length=255, blank=True, null=True)
+
+
+class ProductionWorkerBalance(models.Model):
+    worker = models.ForeignKey(ProductionWorker, on_delete=models.PROTECT)
+    date = models.DateTimeField(auto_now_add=True)
+    amount = models.CharField(max_length=255)

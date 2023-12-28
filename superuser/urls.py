@@ -1,5 +1,7 @@
 from django.urls import path
+from superuser.forms import SellBrak
 from superuser.views import (
+    BrakListView,
     DesignView,
     HomePageView,
     LabelExportView,
@@ -15,6 +17,9 @@ from superuser.views import (
     MaterialTypeDeleteView,
     MaterialHistoryListView,
     MaterialInActivesListView,
+    ProductionMaterialHistory,
+    ProductionMaterialView,
+    SellBrakView,
     SpareListView,
     SpareTypeDeleteView,
     SpareTypeListView,
@@ -143,6 +148,17 @@ urlpatterns += [
         name="design-details",
     ),
     path("dashboard/design/delete/<int:pk>/", DesignDeleteView.as_view(), name="design_delete"),
+    
+]
+
+
+# DESIGN VIEWS
+urlpatterns += [
+    path("dashboard/production/material/", ProductionMaterialView.as_view(), name="production_material"),
+    path("dashboard/production/material/history/", ProductionMaterialHistory.as_view(), name="production_material_history"),
+    path("dashboard/production/brak/", BrakListView.as_view(), name="brak_list"),
+    path("dashboard/production/brak/sell/<int:pk>/", SellBrakView.as_view(), name="sell_brak"),
+    
     
 ]
 

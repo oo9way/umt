@@ -135,3 +135,15 @@ class AdminAllImmutables(forms.ModelForm):
             "cost": "Qiymat",
             "calc_type": "Hisoblash turi",
         }
+
+
+class ImportMaterialToProduction(forms.Form):
+    material = forms.ModelChoiceField(
+        queryset=MaterialStorage.objects.all(),
+        label='Homashyo',
+    )
+    amount = forms.IntegerField(label='Miqdori')
+    
+    
+class SellBrak(forms.Form):
+    price = forms.IntegerField(label='Narxi', required=True)

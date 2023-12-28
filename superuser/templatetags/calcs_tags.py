@@ -3,12 +3,18 @@ from materials.models import Design, MaterialStorage, Exchange, LabelStorage
 
 register = template.Library()
 
+import numpy as np
+
+
+
 
 @register.filter(name='clear_mul_serio')
 def clear_mul_serio(value, arg):
     value = float(value)
     arg = float(arg)
-    return round(value * arg / 1000, 5)
+    calc = value * arg / 1000
+    formatted_number = round(calc * 10 ** 2 + 0.5) / 10 ** 2
+    return formatted_number
 
 
 @register.filter(name='cp')
