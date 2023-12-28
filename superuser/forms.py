@@ -3,6 +3,7 @@ from materials.models import (
     Design,
     DesignField,
     DesignImmutable,
+    Expenditure,
     ImmutableBalance,
     LabelStorage,
     LabelType,
@@ -147,3 +148,13 @@ class ImportMaterialToProduction(forms.Form):
     
 class SellBrak(forms.Form):
     price = forms.IntegerField(label='Narxi', required=True)
+    
+
+class ExpenditureForm(forms.ModelForm):
+    class Meta:
+        model = Expenditure
+        fields = ("comment", "cost")
+        labels = {
+            "comment":"Izoh",
+            "cost":"Summa"
+        }

@@ -4,7 +4,7 @@ from django.http import HttpRequest
 from django.http.response import HttpResponse as HttpResponse
 from django.urls import reverse, reverse_lazy
 from django.shortcuts import render, redirect
-from django.views.generic import ListView, View, UpdateView, DeleteView, DetailView
+from django.views.generic import ListView, View, UpdateView, DeleteView, DetailView, CreateView
 from superuser.permissions import IsAdminRole
 from materials.models import *
 from superuser.forms import *
@@ -727,3 +727,41 @@ class SellBrakView(IsAdminRole, DetailView):
             brak.status ='sold'
             brak.save()
             return redirect('superuser:brak_list')
+        
+class ExpenditureView(IsAdminRole, ListView):
+    model = Expenditure
+    paginate_by = 20
+    ordering = ["-id"]
+    template_name = "superadmin/production/list_create.html"
+    date_from=''
+    date_to=''
+    
+    def get_queryset(self):
+        self.date_from = self.request.GET.get('date_from', '')
+        self.date_to = self.request.GET.get('date_to', '')
+        queryset = super().get_queryset()
+        if self.date_from:
+            queryset = queryset.filter(created_at__gte=self.date_from)
+        
+        if self.date_to:
+            queryset = queryset.filter(created_at__lte=self.date_to)
+            
+        return queryset
+    
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = ExpenditureForm
+        context['date_from'] = self.date_from
+        context['date_to'] = self.date_to
+        return context
+
+    def post(self, request, *args, **kwargs):
+        form = ExpenditureForm(self.request.POST)
+        if form.is_valid():
+            expenditure = form.save(commit=False)
+            expenditure.executor = self.request.user
+            expenditure.save()
+            return redirect('superuser:expenditure')    
+    
+    

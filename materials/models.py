@@ -565,3 +565,12 @@ class ProductionWorkerBalance(models.Model):
     worker = models.ForeignKey(ProductionWorker, on_delete=models.PROTECT)
     date = models.DateTimeField(auto_now_add=True)
     amount = models.CharField(max_length=255)
+    
+
+class Expenditure(models.Model):
+    executor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    comment = models.CharField(max_length=400)
+    cost = models.CharField(max_length=255)
+
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)

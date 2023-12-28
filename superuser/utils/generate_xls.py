@@ -97,3 +97,27 @@ class GenerateDesignExcel(IsAdminRole, View):
         response = HttpResponse(dataset.xls, content_type="application/vnd.ms-excel")
         response["Content-Disposition"] = 'attachment; filename="Dizaynlar.xlsx"'
         return response
+
+
+
+class GenerateExpenditureExcel(IsAdminRole, View):
+    def get(self, request, *args, **kwargs):
+        queryset = Expenditure.objects.all().order_by("-id")
+        
+        date_from = self.request.GET.get('date_from', None)
+        date_to = self.request.GET.get('date_to', None)
+        
+        dataset = ExpenditureModelResource().export(
+            queryset
+        )
+
+        if date_from:
+            queryset = queryset.filter(created_at__gte=date_from)
+            
+        if date_to:
+            queryset = queryset.filter(created_at__lte=date_to)
+            
+        
+        response = HttpResponse(dataset.xls, content_type="application/vnd.ms-excel")
+        response["Content-Disposition"] = 'attachment; filename="Harajatlar.xlsx"'
+        return response

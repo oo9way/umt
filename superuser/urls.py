@@ -3,6 +3,7 @@ from superuser.forms import SellBrak
 from superuser.views import (
     BrakListView,
     DesignView,
+    ExpenditureView,
     HomePageView,
     LabelExportView,
     LabelHistoryListView,
@@ -162,6 +163,10 @@ urlpatterns += [
     
 ]
 
+urlpatterns +=[
+    path("dashboard/expenditure/", ExpenditureView.as_view(), name="expenditure"),
+]
+
 
 # EXCEL GENERATORS
 urlpatterns += [
@@ -201,4 +206,12 @@ urlpatterns += [
         GenerateDesignExcel.as_view(),
         name="design_xls",
     ),
+    
+    path(
+        "dashboard/expenditure/generate-xls/",
+        GenerateExpenditureExcel.as_view(),
+        name="expenditure_xls",
+    ),
 ]
+
+

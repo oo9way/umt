@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+
+{% block sidebar_items %}
+{% include '../sidebar.html' %}
+{% endblock sidebar_items %}
+
+
+{% block content %}
+
+<h3 class="mt-2">Harajatlarni kiritish</h3>
+<hr>
+
+<form method="post">
+    <div class="column-2">
+        {% csrf_token %}
+        {{form|crispy}}
+    </div>
+    <button type="submit" id="submit-btn" class="btn btn-primary">Kiritish</button>
+</form>
+
+<hr>
+<h3 class="mt-5">Filterlash</h3>
+<hr>
+
+<form method="get" class="mb-5">
+    <div class="column-2">
+        <div class="form-group">
+            <label for="">Sana (..dan)</label>
+            <input type="date" name="date_from" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="">Sana (..gacha)</label>
+            <input type="date" name="date_to" class="form-control">
+        </div>
+    </div>
+    <button type="submit" id="submit-btn" class="btn btn-primary mt-3">Aniqlash</button>
+    <a href="{% url 'superuser:expenditure_xls' %}?date_from={{date_from}}&date_to={{date_to}}" class="btn btn-success mt-3">Excelda olish </a>
+
+</form>
+
+<hr>
+
+
+
+<div class="table-responsive mt-3">
+    <table class="table">
+        <thead>
+            <tr>
+                <th style="width: 20px;">#</th>
+                <th>Izoh</th>
+                <th>Summa</th>
+                <th>Kirituvchi</th>
+                <th>Sana</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for obj in object_list %}
+            <tr>
+                <td>{{forloop.counter0|add:page_obj.start_index}}</td>
+                <td>{{obj.comment}}</td>
+                <td>{{obj.cost|intcomma}}</td>
+                <td>{{obj.executor}}</td>
+                <td>{{obj.created_at}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+
+{% if page_obj.has_next or page_obj.has_previous %}
+
+<div class="pagination">
+    <span class="step-links">
+
+        <br>
+        <h6 class="current">
+            {{ page_obj.paginator.num_pages }} - {{ page_obj.number }} sahifa.
+            </h4>
+            <br>
+
+
+            <a class="pagination-btn" {% if page_obj.has_previous %} href="?page=1" {% endif %}>&laquo;Birinchi</a>
+            |
+            <a class="pagination-btn" {% if page_obj.has_previous %} href="?page={{ page_obj.previous_page_number }}"
+                {%endif %}>‹ Oldingi</a> |
+
+
+
+
+            <a class="pagination-btn" {% if page_obj.has_next %}
+                href="?page={{ page_obj.next_page_number }} {% endif %}">Keyingi ›</a> |
+            <a class="pagination-btn" {% if page_obj.has_next %} href="?page={{ page_obj.paginator.num_pages }}"
+                {%endif%}>Oxirgi &raquo;</a>
+
+    </span>
+</div>
+
+{% endif %}
+
+
+
+{% endblock content %}
