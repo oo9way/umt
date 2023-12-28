@@ -1,5 +1,6 @@
 from import_export import resources, fields, widgets
 from materials.models import (
+    Design,
     LabelStorage,
     LabelStorageHistory,
     MaterialStorage,
@@ -116,4 +117,17 @@ class LabelHistoryModelResource(resources.ModelResource):
 
     class Meta:
         model = LabelStorageHistory
+        exclude = "id"
+
+
+
+class DesignModelResource(resources.ModelResource):
+    name = fields.Field(column_name="Dizayn nomi", attribute="name")
+    amount = fields.Field(column_name="Juft soni", attribute="amount")
+    sex = fields.Field(column_name="Jins", attribute="get_sex_display")
+    season = fields.Field(column_name="Mavsum", attribute="get_season_display")
+    created_at = fields.Field(column_name="Dastlabki qo'shish", attribute="created_at")
+
+    class Meta:
+        model = Design
         exclude = "id"

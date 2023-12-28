@@ -339,6 +339,7 @@ class DesignView(IsAdminRole, ListView):
     paginate_by = 20
     ordering = ["-created_at"]
     template_name = "superadmin/design/list_create.html"
+    
 
     def post(self, request, *args, **kwargs):
         form = AdminDesign(request.POST)
@@ -347,9 +348,34 @@ class DesignView(IsAdminRole, ListView):
         design_id = design.id
         return redirect(reverse("superuser:design-insert-materials", args=(design_id,)))
 
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        
+        title = self.request.GET.get('name', None)
+        sex = self.request.GET.get('sex', None)
+        season = self.request.GET.get('season', None)
+
+        if title:
+            queryset = queryset.filter(name__icontains=title)
+            
+        if sex:
+            queryset = queryset.filter(sex=sex)
+            
+        if season:
+            queryset = queryset.filter(season=season)
+            
+        return queryset    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["form"] = AdminDesign
+        
+        context['name'] = self.request.GET.get('name', None)
+        context['sex'] = self.request.GET.get('sex', None)
+        context['season'] = self.request.GET.get('season', None)
+        
+        
         return context
 
 

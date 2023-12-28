@@ -179,4 +179,10 @@ urlpatterns += [
         GenerateLabelExcel.as_view(),
         name="label_xls",
     ),
+    
+    path(
+        "dashboard/design/generate-xls/",
+        GenerateDesignExcel.as_view(),
+        name="design_xls",
+    ),
 ]
