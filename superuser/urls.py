@@ -153,7 +153,6 @@ urlpatterns += [
 ]
 
 
-# DESIGN VIEWS
 urlpatterns += [
     path("dashboard/production/material/", ProductionMaterialView.as_view(), name="production_material"),
     path("dashboard/production/material/history/", ProductionMaterialHistory.as_view(), name="production_material_history"),

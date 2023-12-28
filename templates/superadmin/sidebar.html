@@ -34,6 +34,18 @@
 </div>
 
 
+
+<div class="sidebar-dropdown p-3 border-bottom dropdown">
+    <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true"
+        aria-expanded="false">Ishlab chiqarish</a>
+    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+        <a class="dropdown-item" href="{% url 'superuser:production_material' %}">Ishlab chiqarish homashyo ombori</a>
+        <a class="dropdown-item" href="{% url 'superuser:production_material_history' %}">Homashyo ombori tarixi</a>
+    </div>
+</div>
+
+
+
 <div class="sidebar-dropdown p-3 border-bottom dropdown">
     <a href="{% url 'superuser:design_home' %}" class="nav-link">Dizaynlar</a>
 </div>
