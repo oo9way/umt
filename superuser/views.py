@@ -1,13 +1,56 @@
-from typing import Any
-from django.db.models.query import QuerySet
-from django.http import HttpRequest
+from django.http import JsonResponse
 from django.http.response import HttpResponse as HttpResponse
 from django.urls import reverse, reverse_lazy
 from django.shortcuts import render, redirect
-from django.views.generic import ListView, View, UpdateView, DeleteView, DetailView, CreateView
+from django.views.generic import (
+    ListView,
+    View,
+    UpdateView,
+    DeleteView,
+    DetailView,
+    CreateView,
+)
 from superuser.permissions import IsAdminRole
-from materials.models import *
-from superuser.forms import *
+from materials.models import (
+    MaterialStorage,
+    MaterialStorageHistory,
+    MaterialType,
+    ProductionMaterialStorage,
+    ProductionMaterialStorageHistory,
+    SpareStorage,
+    SpareStorageHistory,
+    SpareType,
+    LabelStorage,
+    LabelType,
+    LabelStorageHistory,
+    Brak,
+    Design,
+    Expenditure,
+    Worker,
+)
+from superuser.utils.check_amount import check_amount
+from user.models import User
+
+from django.db import transaction
+
+from superuser.forms import (
+    UserForm,
+    InsertLabel,
+    InsertLabelTypeForm,
+    InlineDesignField,
+    InsertMaterialForm,
+    InsertMaterialTypeForm,
+    InsertSpare,
+    InsertSpareTypeForm,
+    AdminAllImmutables,
+    AdminDesign,
+    AdminDesignFieldForm,
+    AdminImmutables,
+    SellBrak,
+    ImportMaterialToProduction, 
+    ExpenditureForm
+    
+)
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
 
@@ -343,65 +386,55 @@ class DesignView(IsAdminRole, ListView):
     paginate_by = 20
     ordering = ["-created_at"]
     template_name = "superadmin/design/list_create.html"
-    
 
     def post(self, request, *args, **kwargs):
         form = AdminDesign(request.POST)
         design = form.save(commit=False)
         design.save()
         design_id = design.id
-        
-        return redirect(reverse("superuser:design-insert-materials", args=(design_id,)))
 
+        return redirect(reverse("superuser:design-insert-materials", args=(design_id,)))
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        
-        title = self.request.GET.get('name', None)
-        sex = self.request.GET.get('sex', None)
-        season = self.request.GET.get('season', None)
+
+        title = self.request.GET.get("name", None)
+        sex = self.request.GET.get("sex", None)
+        season = self.request.GET.get("season", None)
 
         if title:
             queryset = queryset.filter(name__icontains=title)
-            
+
         if sex:
             queryset = queryset.filter(sex=sex)
-            
+
         if season:
             queryset = queryset.filter(season=season)
-            
-        return queryset    
+
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["form"] = AdminDesign
-        
-        context['name'] = self.request.GET.get('name', None)
-        context['sex'] = self.request.GET.get('sex', None)
-        context['season'] = self.request.GET.get('season', None)
-        
-        
+
+        context["name"] = self.request.GET.get("name", None)
+        context["sex"] = self.request.GET.get("sex", None)
+        context["season"] = self.request.GET.get("season", None)
+
         return context
 
 
 def admin_insert_design_materials(request, pk):
     try:
         design = Design.objects.get(id=pk)
-        
-        
+
         if design.designfield_set.count() == 0:
             material_type = MaterialType.objects.all()
             design_fields = []
             for mt in material_type:
-                design_fields.append(
-                    DesignField(
-                        material_type=mt,
-                        design_type=design
-                    )
-                )
+                design_fields.append(DesignField(material_type=mt, design_type=design))
             DesignField.objects.bulk_create(design_fields)
         return redirect(reverse("superuser:design-edit-materials", args=(pk,)))
-        
 
     except:
         messages.error(
@@ -618,12 +651,11 @@ def admin_design_details(request, pk):
     design = Design.objects.get(id=pk)
     immutables = ImmutableBalance.objects.all()
     exchange = Exchange.objects.last()
-    context = {'design': design, 'immutables': immutables, 'exchange':exchange}
-    return render(request, 'superadmin/design/details.html', context)
+    context = {"design": design, "immutables": immutables, "exchange": exchange}
+    return render(request, "superadmin/design/details.html", context)
 
 
 class DesignDeleteView(IsAdminRole, DeleteView):
-    
     model = Design
     success_url = reverse_lazy("superuser:design_home")
     template_name = "superadmin/design/delete.html"
@@ -634,126 +666,125 @@ class ProductionMaterialView(IsAdminRole, ListView):
     paginate_by = 20
     ordering = ["-created_at"]
     template_name = "superadmin/production/material_list_create.html"
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['form'] = ImportMaterialToProduction
+        context["form"] = ImportMaterialToProduction
         return context
-    
+
     def post(self, request, *args, **kwargs):
-        material = MaterialStorage.objects.get(id=request.POST.get('material'))
-        if float(material.amount) >= float(request.POST.get('amount')):
+        material = MaterialStorage.objects.get(id=request.POST.get("material"))
+        if float(material.amount) >= float(request.POST.get("amount")):
             pm = ProductionMaterialStorage.objects.create(
                 material=material,
                 price=material.price,
                 price_type=material.price_type,
-                amount=request.POST.get('amount'),
-                is_active='active'
+                amount=request.POST.get("amount"),
+                is_active="active",
             )
-            
+
             ProductionMaterialStorageHistory.objects.create(
-                executor = request.user,
-                production_material = pm,
-                action = 'import',
-                amount = request.POST.get('amount'),
-                amount_type = material.amount_type,
+                executor=request.user,
+                production_material=pm,
+                action="import",
+                amount=request.POST.get("amount"),
+                amount_type=material.amount_type,
                 price=material.price,
                 price_type=material.price_type,
-                where='production'
-                
+                where="production",
             )
-            
+
             MaterialStorageHistory.objects.create(
-                executor = request.user,
-                material = material.material,
-                action = 'export',
-                amount = request.POST.get('amount'),
-                amount_type = material.amount_type,
+                executor=request.user,
+                material=material.material,
+                action="export",
+                amount=request.POST.get("amount"),
+                amount_type=material.amount_type,
                 price=material.price,
                 price_type=material.price_type,
-                where='production'
+                where="production",
             )
-            
-            material.amount = float(material.amount) - float(request.POST.get('amount'))
+
+            material.amount = float(material.amount) - float(request.POST.get("amount"))
             material.save()
-        
-        return redirect('superuser:production_material')
-    
+
+        return redirect("superuser:production_material")
+
 
 class ProductionMaterialHistory(IsAdminRole, ListView):
     model = ProductionMaterialStorageHistory
     paginate_by = 20
     ordering = ["-created_at"]
     template_name = "superadmin/production/history.html"
-    
+
     def get_queryset(self):
-        date_from  = self.request.GET.get('date_from')
-        date_to  = self.request.GET.get('date_to')
+        date_from = self.request.GET.get("date_from")
+        date_to = self.request.GET.get("date_to")
         queryset = super().get_queryset()
         if date_from:
             queryset = queryset.filter(created_at__gte=date_from)
-        
+
         if date_to:
             queryset = queryset.filter(created_at__lte=date_to)
-            
+
         return queryset
-    
+
 
 class BrakListView(IsAdminRole, ListView):
     model = Brak
     paginate_by = 20
     ordering = ["-id"]
     template_name = "superadmin/production/brak_list_create.html"
-    
+
     def get_queryset(self):
         queryset = super().get_queryset()
-        queryset = queryset.filter(status='active')
+        queryset = queryset.filter(status="active")
         return queryset
-    
-    
+
+
 class SellBrakView(IsAdminRole, DetailView):
     model = Brak
     template_name = "superadmin/production/sell_brak.html"
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['form'] = SellBrak
+        context["form"] = SellBrak
         return context
-    
+
     def post(self, request, pk, *args, **kwargs):
         brak = Brak.objects.get(id=pk)
         form = SellBrak(request.POST)
         if form.is_valid():
-            brak.status ='sold'
+            brak.status = "sold"
             brak.save()
-            return redirect('superuser:brak_list')
-        
+            return redirect("superuser:brak_list")
+
+
 class ExpenditureView(IsAdminRole, ListView):
     model = Expenditure
     paginate_by = 20
     ordering = ["-id"]
     template_name = "superadmin/production/list_create.html"
-    date_from=''
-    date_to=''
-    
+    date_from = ""
+    date_to = ""
+
     def get_queryset(self):
-        self.date_from = self.request.GET.get('date_from', '')
-        self.date_to = self.request.GET.get('date_to', '')
+        self.date_from = self.request.GET.get("date_from", "")
+        self.date_to = self.request.GET.get("date_to", "")
         queryset = super().get_queryset()
         if self.date_from:
             queryset = queryset.filter(created_at__gte=self.date_from)
-        
+
         if self.date_to:
             queryset = queryset.filter(created_at__lte=self.date_to)
-            
+
         return queryset
-    
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['form'] = ExpenditureForm
-        context['date_from'] = self.date_from
-        context['date_to'] = self.date_to
+        context["form"] = ExpenditureForm
+        context["date_from"] = self.date_from
+        context["date_to"] = self.date_to
         return context
 
     def post(self, request, *args, **kwargs):
@@ -762,6 +793,73 @@ class ExpenditureView(IsAdminRole, ListView):
             expenditure = form.save(commit=False)
             expenditure.executor = self.request.user
             expenditure.save()
-            return redirect('superuser:expenditure')    
-    
-    
+            return redirect("superuser:expenditure")
+
+
+class UserView(IsAdminRole, CreateView):
+    model = User
+    template_name = "superadmin/user/home.html"
+    form_class = UserForm
+    success_url = reverse_lazy("superuser:profiles")
+
+    def form_valid(self, form):
+        user = form.save(commit=False)
+        user.set_password(form.cleaned_data["password"])
+        user.save()
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["object_list"] = User.objects.all().order_by("-id")
+
+        return context
+
+
+
+@transaction.atomic
+def admin_production_send_yaim(request):
+    if request.user.is_authenticated and request.user.profile.levels == 'admin':
+        workers = Worker.objects.all()
+        designs = Design.objects.all()
+        fields = []
+        field = {}
+
+        if request.method == "POST":
+            r = int(request.POST['rows_amount'])
+            for l in range(1, r+1):
+                try:
+                    field = {
+                        "field_id": l,
+                        "date": request.POST['date'],
+                        "worker_id": request.POST[f'worker{l}'],
+                        "cost": request.POST[f'cost{l}'],
+                        "design_id": request.POST[f'design{l}'],
+                        "amount": request.POST[f'amount{l}'],
+                        "second_type_per": request.POST[f'second_type_per{l}'],
+                        "second_type_gr": request.POST[f'second_type_gr{l}'],
+                        "third_type": request.POST[f'third_type{l}'],
+                    }
+                    fields.append(field)
+                except:
+                    pass
+            response = check_amount(fields, request.user.profile.number, request)
+            return JsonResponse({'success':True, 'data':response})
+
+        context = {
+            'menu': 'production_send',
+            'workers': workers,
+            'designs': designs
+        }
+
+        if 'rows' in request.GET:
+            arr = range(1, int(request.GET['rows'])+1)
+            context = {
+                'menu': 'production_send',
+                'workers': workers,
+                'designs': designs,
+                'rows': arr,
+                'rows_amount': request.GET['rows']
+            }
+
+        return render(request, 'admins/production/send.html', context)
+    return redirect('base:login')

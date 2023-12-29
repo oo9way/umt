@@ -12,6 +12,7 @@ from materials.models import (
     SpareStorage,
     SpareType,
 )
+from user.models import User
 
 
 class InsertMaterialForm(forms.ModelForm):
@@ -157,4 +158,15 @@ class ExpenditureForm(forms.ModelForm):
         labels = {
             "comment":"Izoh",
             "cost":"Summa"
+        }
+        
+        
+class UserForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ("username", "password", "role",)
+        labels = {
+            "username":"Login",
+            "password":"Parol",
+            "role":"Status"
         }

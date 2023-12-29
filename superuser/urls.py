@@ -28,6 +28,7 @@ from superuser.views import (
     SpareHistoryListView,
     SpareExportView,
     DesignDeleteView,
+    UserView,
     admin_design_details,
     admin_edit_design_materials,
     admin_insert_design_materials,
@@ -167,6 +168,11 @@ urlpatterns +=[
 ]
 
 
+urlpatterns +=[
+    path("dashboard/profiles/", UserView.as_view(), name="profiles"),
+]
+
+
 # EXCEL GENERATORS
 urlpatterns += [
     path(
@@ -214,3 +220,10 @@ urlpatterns += [
 ]
 
 
+# TODO
+# * Manager profiles
+# * Workers
+# * Production / Send YAIM
+# * Yaim / Send Sklad
+# * Tayyor mahsulot / Savdo
+# * Nazoratchi / Sotuvchi / Zapchast / Seryo ----> Profillar

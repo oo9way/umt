@@ -492,8 +492,8 @@ class ProductionMaterialStorage(models.Model):
 
 class ProductionMaterialStorageHistory(models.Model):
     executor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    production_material = models.ForeignKey(ProductionMaterialStorage, on_delete=models.SET_NULL, null=True)
-
+    production_material = models.ForeignKey(MaterialType, on_delete=models.SET_NULL, null=True)
+    production_label = models.ForeignKey(LabelType, on_delete=models.SET_NULL, null=True)
     action = models.CharField(choices=ACTION_TYPES, max_length=9)
     amount = models.CharField(default="0", max_length=255)
     amount_type = models.CharField(choices=AMOUNTS, max_length=5, default="point")
@@ -521,9 +521,9 @@ class Production(models.Model):
 class ProductionHistory(models.Model):
 
     executor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    production = models.ForeignKey(Production, on_delete=models.SET_NULL, null=True)
+    production = models.ForeignKey(Design, on_delete=models.SET_NULL, null=True)
 
-    action = models.CharField(choices=ACTION_TYPES, max_length=9)
+    action = models.CharField(choices=ACTION_TYPES, max_length=15)
     amount = models.CharField(default="0", max_length=255)
     amount_type = models.CharField(choices=AMOUNTS, max_length=5, default="point")
     price = models.CharField(max_length=255, blank=True)
@@ -572,5 +572,123 @@ class Expenditure(models.Model):
     comment = models.CharField(max_length=400)
     cost = models.CharField(max_length=255)
 
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    
+    
+class WorkerCredit(models.Model):
+    amount = models.CharField(max_length=255)
+    comment = models.CharField(max_length=255, null=True, blank=True)
+
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class WorkerDebit(models.Model):
+    amount = models.CharField(max_length=255)
+    comment = models.CharField(max_length=255, null=True, blank=True)
+
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class WorkerFine(models.Model):
+    amount = models.CharField(max_length=255)
+    comment = models.CharField(max_length=255, null=True, blank=True)
+
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class WorkerWork(models.Model):
+    amount = models.CharField(max_length=255)
+    cost = models.CharField(max_length=255, default=0)
+    comment = models.CharField(max_length=255, null=True, blank=True)
+
+
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class Worker(models.Model):
+    SALARY_TYPES = (
+        ('daily', 'Donabay'),
+        ('monthly', 'Oylik'),
+        ('per_way', 'Aravabay')
+    )
+
+    JOB_TYPES = (
+        ('administration', 'Mamuriyat'),
+        ('master', 'Usta'),
+        ('tailor', 'Tikuvchi'),
+        ('rosso_tailor', 'Rosso tikuvchisi'),
+        ('turner', 'Ag`daruvchi'),
+        ('moulder', 'Qolipchi'),
+        ('charioteer', 'Arava yechuvchi'),
+        ('taster', 'Tahlovchi'),
+        ('label_setter', 'Etiketika uruvchi'),
+        ('packer', 'Qadoqchi'),
+    )
+
+    name = models.CharField(max_length=255)
+    job_type = models.CharField(choices=JOB_TYPES, max_length=20)
+    phone = models.CharField(max_length=255, null=True, blank=True)
+    salary = models.CharField(max_length=255, default=0)
+    salary_types = models.CharField(choices=SALARY_TYPES, max_length=15)
+
+    address = models.CharField(max_length=255, null=True, blank=True)
+    car_number = models.CharField(max_length=255, null=True, blank=True)
+    driver = models.CharField(max_length=255, null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+class WorkerAccount(models.Model):
+    worker = models.ForeignKey(Worker, on_delete=models.PROTECT)
+
+    credits = models.CharField(max_length=255, default=0)
+    credits_history = models.ManyToManyField(
+        WorkerCredit, null=True, blank=True)
+
+    debits = models.CharField(max_length=255, default=0)
+    debits_history = models.ManyToManyField(WorkerDebit, null=True, blank=True)
+
+    fines = models.CharField(max_length=255, default=0)
+    fines_history = models.ManyToManyField(WorkerFine, null=True, blank=True)
+
+    workerworks_cost = models.CharField(max_length=255, default=0)
+    workerworks_history = models.ManyToManyField(
+        WorkerWork, null=True, blank=True)
+    
+    completed = models.BooleanField(default=False)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    
+class Product(models.Model):
+    ACTIVE = (
+        ('active', 'Faol'),
+        ('inactive', 'Nofaol'),
+        ('pending', 'Kutilmoqda')
+    )
+    design_type = models.ForeignKey(Design, on_delete=models.PROTECT)
+    amount = models.CharField(max_length=255, default='0')
+    price = models.CharField(max_length=255)
+    comment = models.CharField(max_length=255, default="Izoh qoldiring")
+    is_active = models.CharField(
+        choices=ACTIVE, default='pending', max_length=8)
+    date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.design_type.name
+
+
+class ProductHistory(models.Model):
+    executor = models.ForeignKey(
+        User, on_delete=models.SET_DEFAULT, default="O'chirilgan foydalanuvchi")
+    action = models.CharField(choices=ACTION_TYPES, max_length=7)
+    details = models.JSONField()
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)

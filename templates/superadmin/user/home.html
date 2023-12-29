@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+
+{% block sidebar_items %}
+{% include '../sidebar.html' %}
+{% endblock sidebar_items %}
+
+
+{% block content %}
+
+<h3 class="mt-2">Harajatlarni kiritish</h3>
+<hr>
+
+<form method="post">
+    <div class="column-2">
+        {% csrf_token %}
+        {{form|crispy}}
+    </div>
+    <button type="submit" id="submit-btn" class="btn btn-primary">Saqlash</button>
+</form>
+
+<hr class="mt-5">
+
+<div class="table-responsive mt-5">
+    <table class="table">
+        <thead>
+            <tr>
+                <th style="width: 20px;">#</th>
+                <th>Foydalanuvchi</th>
+                <th>Status</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for obj in object_list %}
+            <tr>
+                <td>{{forloop.counter}}</td>
+                <td>{{obj.username}}</td>
+                <td>{{obj.get_role_display}}</td>
+                <td></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+
+
+
+
+{% endblock content %}
