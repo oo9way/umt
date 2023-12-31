@@ -70,7 +70,7 @@
             <tr>
                 <td>{{ worker.name }}</td>
                 <td>{{ worker.get_job_type_display}}</td>
-                <td>{{ worker.phone }}</td>
+                <td>{% if worker.phone %} {{worker.phone}} {% else %} - {% endif %}</td>
                 <td>{{ worker.get_salary_types_display }}</td>
                 <td>
 
@@ -235,8 +235,13 @@
                         <i class="fa fa-eye"></i>
                     </a>
                 </td>
-                <td>{{ worker.address }}</td>
-                <td>{{ worker.car_number }} - {{worker.driver}}</td>
+                <td>{% if worker.address %} {{worker.address}} {% else %} - {% endif %}</td>
+                <td>
+                    {% if worker.car_number %} {{worker.car_number}} {% else %} - {% endif %}
+                    {% if worker.driver %} {{worker.driver}} {% else %} - {% endif %}
+                
+                </td>
+                
                 <td><a class="badge btn btn-sm bg-primary" href="{% url 'superuser:worker-details' worker.pk %}">
                         <i class="fa fa-edit"></i>
                     </a></td>

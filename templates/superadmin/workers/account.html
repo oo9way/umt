@@ -73,11 +73,7 @@
                     {{account.workerworks_cost|intcomma}}
                     {% endif %} so'm</td>
                 <td>
-                    {% if worker.salary_types == 'monthly' %}
-                    <button class="btn btn-sm btn-primary" disabled><i class="fa fa-eye"></i> Ma'lumotlar</button>
-                    {% else %}
                     <a href="{% url 'superuser:worker-stats' worker.id account.id %}?type=works" class="btn btn-primary btn-sm"><i class="fa fa-eye"></i> Ma'lumotlar</a>
-                    {% endif %}
                 </td>
             </tr>
             <tr>

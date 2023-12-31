@@ -694,3 +694,18 @@ class ProductHistory(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
+
+
+class Finance(models.Model):
+    FINANCE_TYPES = (
+        ('credit', "Chiqim"),
+        ('debit', "Kirim"),
+    )
+    
+    cost = models.CharField(max_length=255, default='0')
+    comment = models.CharField(max_length=255)
+    
+    type = models.CharField(max_length=16, choices=FINANCE_TYPES, default="credit")
+    
+    updated_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now=True)
