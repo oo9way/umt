@@ -19,7 +19,6 @@ from superuser.views import (
     MaterialHistoryListView,
     MaterialInActivesListView,
     ProductionMaterialHistory,
-    ProductionMaterialView,
     SellBrakView,
     SpareListView,
     SpareTypeDeleteView,
@@ -29,9 +28,19 @@ from superuser.views import (
     SpareExportView,
     DesignDeleteView,
     UserView,
+    WorkerListCreateView,
+    admin_account_details,
+    admin_accounts_history,
     admin_design_details,
     admin_edit_design_materials,
     admin_insert_design_materials,
+    admin_unclosed_salaries,
+    admin_worker_account,
+    admin_worker_credits,
+    admin_worker_details,
+    admin_worker_stats,
+    admin_workers,
+    production_send_yaim,
 )
 
 from superuser.utils.generate_xls import *
@@ -155,12 +164,10 @@ urlpatterns += [
 
 
 urlpatterns += [
-    path("dashboard/production/material/", ProductionMaterialView.as_view(), name="production_material"),
     path("dashboard/production/material/history/", ProductionMaterialHistory.as_view(), name="production_material_history"),
     path("dashboard/production/brak/", BrakListView.as_view(), name="brak_list"),
     path("dashboard/production/brak/sell/<int:pk>/", SellBrakView.as_view(), name="sell_brak"),
-    
-    
+    path("dashboard/production/send-yaim/", production_send_yaim, name="send_yaim"),
 ]
 
 urlpatterns +=[
@@ -170,6 +177,23 @@ urlpatterns +=[
 
 urlpatterns +=[
     path("dashboard/profiles/", UserView.as_view(), name="profiles"),
+]
+
+# WORKERS
+
+urlpatterns +=[
+    path("dashboard/workers/", admin_workers, name="workers"),
+    path('dashboard/workers/<int:pk>/', admin_worker_details, name='worker-details'),
+    path('dashboard/workers/account/<int:pk>/', admin_worker_account, name='worker-accounts'),
+    path('dashboard/workers/account-details/<int:pk>/', admin_account_details, name='worker-account'),
+    path('dashboard/workers/account/<int:wid>/stats/<int:aid>/', admin_worker_credits, name='worker-stats'),
+    path('dashboard/workers/unclosed-accounts/', admin_unclosed_salaries, name='unclosed-accounts'),
+    path('dashboard/workers/history/', admin_accounts_history, name='accounts-history'),
+    path('dashboard/workers/stats/', admin_worker_stats, name='register-workers-stats'),
+
+
+
+
 ]
 
 
@@ -221,7 +245,7 @@ urlpatterns += [
 
 
 # TODO
-# * Manager profiles
+# * Manager profiles +
 # * Workers
 # * Production / Send YAIM
 # * Yaim / Send Sklad

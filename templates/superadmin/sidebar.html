@@ -39,8 +39,8 @@
     <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true"
         aria-expanded="false">Ishlab chiqarish</a>
     <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-        <a class="dropdown-item" href="{% url 'superuser:production_material' %}">Ishlab chiqarish homashyo ombori</a>
-        <a class="dropdown-item" href="{% url 'superuser:production_material_history' %}">Homashyo ombori tarixi</a>
+        <a class="dropdown-item" href="{% url 'superuser:production_material_history' %}">Homashyo tarixi</a>
+        <a class="dropdown-item" href="{% url 'superuser:send_yaim' %}">YaTMga mahsulot yuborish</a>
     </div>
 </div>
 
@@ -61,4 +61,17 @@
 <div class="sidebar-dropdown p-3 border-bottom dropdown">
     <a href="{% url 'superuser:profiles' %}" class="nav-link">Menejerlar</a>
 </div>
+
+<div class="sidebar-dropdown p-3 border-bottom dropdown">
+    <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true"
+        aria-expanded="false">Ishchilar</a>
+    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+        <a class="dropdown-item" href="{% url 'superuser:workers' %}">Ishchilar</a>
+        <a class="dropdown-item" href="{% url 'superuser:unclosed-accounts' %}">Yopilmagan ish haqqilari</a>
+        <a class="dropdown-item" href="{% url 'superuser:accounts-history' %}">Ish haqqi tarixi</a>
+        <a class="dropdown-item" href="{% url 'superuser:register-workers-stats' %}">Ishlarni ro'yxatga olish</a>
+    </div>
+</div>
+
+
 {% endblock sidebar_items %}

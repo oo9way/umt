@@ -3,7 +3,7 @@ from materials.models import Brak, Design, Exchange, LabelStorage, LabelStorageH
 import time
 from django.db.models import Sum
 
-def check_amount(fields, number, request):
+def check_amount(fields, request):
     last_result = []
     errors = []
     sucess = []
@@ -175,7 +175,7 @@ def check_amount(fields, number, request):
                         executor=request.user,
                         production_label=lb_item.label,
                         action='import',
-                        amount=f'{remaining_amount }',
+                        amount=f'{rm_amount }',
                         amount_type=lb_item.amount_type,
                         price=lb_item.confirmed_price,
                         price_type=lb_item.price_type,
@@ -186,7 +186,7 @@ def check_amount(fields, number, request):
                         executor=request.user,
                         label=lb_item.label,
                         action="export",
-                        amount=remaining_amount,
+                        amount=rm_amount,
                         price=price,
                         price_type=lb_item.price_type,
                         amount_type=lb_item.amount_type,
@@ -212,7 +212,7 @@ def check_amount(fields, number, request):
                 imt_perc += float(immuts_percent.cost)
 
 
-            price = price / 100 * (100+imt_perc)
+            price = round(price / 100 * (100+imt_perc), 5)
 
             old_product = Product.objects.filter(design_type=design).filter(price=price).filter(is_active='active')
 
@@ -238,7 +238,6 @@ def check_amount(fields, number, request):
 
             worker_profile=Worker.objects.get(id=product['worker_id'])
             worker = WorkerAccount.objects.filter(worker__id=product['worker_id']).filter(created_at__month=current_month, created_at__year=current_year)
-            
             worker_works = WorkerWork.objects.create(
                 amount=product['amount'],
                 cost=product['cost'],
@@ -267,7 +266,7 @@ def check_amount(fields, number, request):
 
             ProductionHistory.objects.create(
                 executor=request.user,
-                production=design.name,
+                production=design,
                 action='export',
                 amount=product['amount'],
                 amount_type='uzs',
@@ -335,6 +334,7 @@ def insert_worker_stats(fields, request):
     success = []
 
     for stat in fields:
+        print(stat)
         states = []
         
         try:
@@ -352,7 +352,7 @@ def insert_worker_stats(fields, request):
         if amount is not None and cost is not None:
             try:
                 amount = float(amount)
-                cost = float(amount)
+                cost = float(cost)
                 states.append(True)
             except:
                 states.append(False)
@@ -364,11 +364,13 @@ def insert_worker_stats(fields, request):
             
         if all(state == True for state in states):
             current_month = datetime.now().month
-            worker_account = WorkerAccount.objects.filter(worker=worker).filter(created_at__month=current_month)
+            
+            worker_account = WorkerAccount.objects.filter(worker=worker).filter(created_at__month=current_month, completed=False)
+            
             worker_work_history = WorkerWork.objects.create(
                 amount=amount,
                 cost=cost,
-                comment=''
+                comment='Donabay ish'
             )
 
             if len(worker_account) > 0:

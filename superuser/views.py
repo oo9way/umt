@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.http import JsonResponse
 from django.http.response import HttpResponse as HttpResponse
 from django.urls import reverse, reverse_lazy
@@ -27,13 +28,20 @@ from materials.models import (
     Design,
     Expenditure,
     Worker,
+    ImmutableBalance,
+    Exchange,
+    WorkerAccount,
+    WorkerCredit,
+    WorkerDebit,
+    WorkerFine
 )
-from superuser.utils.check_amount import check_amount
+from superuser.utils.check_amount import check_amount, insert_worker_stats
 from user.models import User
 
 from django.db import transaction
 
 from superuser.forms import (
+    AdminWorker,
     UserForm,
     InsertLabel,
     InsertLabelTypeForm,
@@ -48,8 +56,7 @@ from superuser.forms import (
     AdminImmutables,
     SellBrak,
     ImportMaterialToProduction, 
-    ExpenditureForm
-    
+    ExpenditureForm    
 )
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
@@ -661,55 +668,6 @@ class DesignDeleteView(IsAdminRole, DeleteView):
     template_name = "superadmin/design/delete.html"
 
 
-class ProductionMaterialView(IsAdminRole, ListView):
-    model = ProductionMaterialStorage
-    paginate_by = 20
-    ordering = ["-created_at"]
-    template_name = "superadmin/production/material_list_create.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["form"] = ImportMaterialToProduction
-        return context
-
-    def post(self, request, *args, **kwargs):
-        material = MaterialStorage.objects.get(id=request.POST.get("material"))
-        if float(material.amount) >= float(request.POST.get("amount")):
-            pm = ProductionMaterialStorage.objects.create(
-                material=material,
-                price=material.price,
-                price_type=material.price_type,
-                amount=request.POST.get("amount"),
-                is_active="active",
-            )
-
-            ProductionMaterialStorageHistory.objects.create(
-                executor=request.user,
-                production_material=pm,
-                action="import",
-                amount=request.POST.get("amount"),
-                amount_type=material.amount_type,
-                price=material.price,
-                price_type=material.price_type,
-                where="production",
-            )
-
-            MaterialStorageHistory.objects.create(
-                executor=request.user,
-                material=material.material,
-                action="export",
-                amount=request.POST.get("amount"),
-                amount_type=material.amount_type,
-                price=material.price,
-                price_type=material.price_type,
-                where="production",
-            )
-
-            material.amount = float(material.amount) - float(request.POST.get("amount"))
-            material.save()
-
-        return redirect("superuser:production_material")
-
 
 class ProductionMaterialHistory(IsAdminRole, ListView):
     model = ProductionMaterialStorageHistory
@@ -817,8 +775,8 @@ class UserView(IsAdminRole, CreateView):
 
 
 @transaction.atomic
-def admin_production_send_yaim(request):
-    if request.user.is_authenticated and request.user.profile.levels == 'admin':
+def production_send_yaim(request):
+    if request.user.is_authenticated and request.user.role == 'ADMIN':
         workers = Worker.objects.all()
         designs = Design.objects.all()
         fields = []
@@ -842,7 +800,7 @@ def admin_production_send_yaim(request):
                     fields.append(field)
                 except:
                     pass
-            response = check_amount(fields, request.user.profile.number, request)
+            response = check_amount(fields,request)
             return JsonResponse({'success':True, 'data':response})
 
         context = {
@@ -861,5 +819,352 @@ def admin_production_send_yaim(request):
                 'rows_amount': request.GET['rows']
             }
 
-        return render(request, 'admins/production/send.html', context)
+        return render(request, 'superadmin/production/send.html', context)
     return redirect('base:login')
+
+
+class WorkerListCreateView(IsAdminRole, ListView):
+    model = Worker
+    paginate_by = 20
+    ordering = ["-id"]
+    template_name = "superadmin/workers/list_create.html"
+    
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # context['form'] = WorkerForm
+        return context
+    
+    
+    
+
+def admin_workers(request):
+    current_month = datetime.now().month
+    current_year = datetime.now().year
+
+    worker_form = AdminWorker
+    workers = Worker.objects.all()
+
+    if request.method == "POST" and request.POST['type'] == 'insert_worker':
+        worker_form = AdminWorker(request.POST)
+        if worker_form.is_valid():
+            worker_form.save()
+            messages.success(request, "Ro'yxatdan o'tkazildi")
+        else:
+            messages.error(request, "Formada xatolik bor", extra_tags='danger')
+        return redirect('superuser:workers')
+
+    if request.method == "POST" and request.POST['type'] == 'credits':
+        try:
+            with transaction.atomic():
+                worker_credit = WorkerCredit.objects.create(
+                    amount=request.POST['credit_amount'],
+                    comment=request.POST['comment']
+                )
+
+                worker = Worker.objects.get(id=request.POST['worker_id'])
+
+                worker_accounts = WorkerAccount.objects.filter(
+                    created_at__month=current_month, created_at__year=current_year).filter(worker=worker).filter(completed=False)
+                if len(worker_accounts) == 1:
+                    worker_account = worker_accounts.last()
+                elif len(worker_accounts) == 0:
+                    worker_account = WorkerAccount.objects.create(
+                        worker=worker
+                    )
+
+                worker_account.credits_history.add(worker_credit)
+                worker_account.credits = float(
+                    worker_account.credits) + float(request.POST['credit_amount'])
+
+                worker_account.save()
+
+                # send_msg(
+                #     worker.phone, f"Sizga {request.POST['credit_amount']} so'm miqdorida avans berildi.\nUmumiy olingan avans: {worker_account.credits} so'm")
+                return redirect("superuser:workers")
+
+        except:
+            messages.error(
+                request, "Ishchi topilmadi, qaytadan urining", extra_tags='danger')
+            return redirect("superuser:workers")
+
+    if request.method == "POST" and request.POST['type'] == 'debits':
+        try:
+            with transaction.atomic():
+                worker_debit = WorkerDebit.objects.create(
+                    amount=request.POST['debit_amount'],
+                    comment=request.POST['comment']
+                )
+
+                worker = Worker.objects.get(id=request.POST['worker_id'])
+
+                worker_accounts = WorkerAccount.objects.filter(
+                    created_at__month=current_month, created_at__year=current_year).filter(worker=worker).filter(completed=False)
+                if len(worker_accounts) == 1:
+                    worker_account = worker_accounts.last()
+                elif len(worker_accounts) == 0:
+                    worker_account = WorkerAccount.objects.create(
+                        worker=worker
+                    )
+
+                worker_account.debits_history.add(worker_debit)
+                worker_account.debits = float(
+                    worker_account.debits) + float(request.POST['debit_amount'])
+
+                worker_account.save()
+
+                # send_msg(
+                #     worker.phone, f"Sizga {request.POST['debit_amount']} so'm miqdorida bonus berildi.\nUmumiy olingan bonus: {worker_account.debits} so'm")
+                return redirect("superuser:workers")
+
+        except:
+            messages.error(
+                request, "Ishchi topilmadi, qaytadan urining", extra_tags='danger')
+            return redirect("superuser:workers")
+
+    if request.method == "POST" and request.POST['type'] == 'fines':
+        try:
+            with transaction.atomic():
+                worker_fine = WorkerFine.objects.create(
+                    amount=request.POST['fine_amount'],
+                    comment=request.POST['comment']
+                )
+
+                worker = Worker.objects.get(id=request.POST['worker_id'])
+
+                worker_accounts = WorkerAccount.objects.filter(
+                    created_at__month=current_month, created_at__year=current_year).filter(worker=worker).filter(completed=False)
+                if len(worker_accounts) == 1:
+                    worker_account = worker_accounts.last()
+                elif len(worker_accounts) == 0:
+                    worker_account = WorkerAccount.objects.create(
+                        worker=worker
+                    )
+
+                worker_account.fines_history.add(worker_fine)
+                worker_account.fines = float(
+                    worker_account.fines) + float(request.POST['fine_amount'])
+
+                worker_account.save()
+
+                # send_msg(
+                #     worker.phone, f"Sizga {request.POST['fine_amount']} so'm miqdorida jarima yozildi.\nUmumiy olingan jarima: {worker_account.fines} so'm")
+                return redirect("superuser:workers")
+
+        except:
+            messages.error(
+                request, "Ishchi topilmadi, qaytadan urining", extra_tags='danger')
+            return redirect("superuser:workers")
+
+    context = {
+        'menu': 'admin-workers',
+        'worker_form': worker_form,
+        'workers': workers
+    }
+    return render(request, "superadmin/workers/index.html", context)
+
+
+
+def admin_worker_details(request, pk):
+
+    worker = Worker.objects.get(id=pk)
+
+    form = AdminWorker(instance=worker)
+
+    if request.method == "POST":
+        form = AdminWorker(request.POST, instance=worker)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Muvaffaqiyatli o'zgartirildi")
+            return redirect("superuser:workers")
+
+    context = {
+        'form': form,
+        'worker': worker,
+    }
+    
+    return render(request, 'superadmin/workers/details.html', context)
+
+
+def admin_worker_account(request, pk):
+
+    worker = Worker.objects.get(id=pk)
+
+    worker_accounts = WorkerAccount.objects.filter(completed=False).filter(worker=worker)
+
+    if len(worker_accounts) == 0:
+        wa = WorkerAccount.objects.create(worker=worker)
+        worker_accounts = [wa]
+
+    if request.method == "POST":
+        with transaction.atomic():
+            account = WorkerAccount.objects.get(id=request.POST['account_id'])
+            account.completed = True
+            account.save()
+            if worker.salary_types == 'monthly':
+                total_cost = float(worker.salary) - float(account.fines) - float(account.credits) + float(account.debits)
+            else:
+                total_cost = float(account.workerworks_cost) - float(account.fines) - float(account.credits) + float(account.debits)
+
+            # balance = Balance.objects.get(id=1)
+            # balance.uzs_balance = float(balance.uzs_balance) - total_cost
+            # balance.save()
+
+            # BalanceHistory.objects.create(
+            #     executor=request.user,
+            #     transaction_type='credit',
+            #     cost=total_cost,
+            #     currency='uzs',
+            #     comment="Oylik maosh"
+            # )
+
+        return redirect("superuser:workers")
+
+    context = {
+        'worker': worker,
+        'accounts':worker_accounts,
+    }
+
+    return render(request, 'superadmin/workers/account.html', context)
+
+
+
+def admin_worker_credits(request, wid, aid):
+    try:
+        if request.GET['type'] == 'credits':
+            view_type = 'credits'
+        elif request.GET['type'] == 'debits':
+            view_type = 'debits'
+        elif request.GET['type'] == 'fines':
+            view_type = 'fines'
+        elif request.GET['type'] == 'works':
+            view_type = 'works'
+
+        worker = Worker.objects.get(id=wid)
+        worker_account = WorkerAccount.objects.get(id=aid)
+        context = {
+            'worker':worker,
+            'account':worker_account,
+            'view':view_type
+        }
+        return render(request, 'superadmin/workers/all_stats.html', context)
+    except:
+        return redirect("base:admin-workers")
+    
+    
+    
+
+def admin_unclosed_salaries(request):
+    unclosed_accounts = WorkerAccount.objects.filter(completed=False)
+    context = {
+        'menu':'unclosed',
+        'accounts':unclosed_accounts
+    }
+    return render(request, 'superadmin/workers/unclosed.html', context)
+
+
+
+
+def admin_accounts_history(request):
+    query = None
+    if 'year' in request.GET and 'month' in request.GET and 'type' in request.GET:
+        year = request.GET['year']
+        month = request.GET['month']
+        a_type = request.GET['type']
+
+        if month == 'all':
+            accounts = WorkerAccount.objects.filter(created_at__year=year)
+        else:
+            accounts = WorkerAccount.objects.filter(created_at__month=month).filter(created_at__year=year)
+
+        if a_type == 'true':
+            accounts = accounts.filter(completed=True)
+        elif a_type == 'false':
+            accounts = accounts.filter(completed=False)
+        
+        query = accounts
+
+    context = {
+        'menu':'account-history',
+        'query':query
+    }
+    return render(request, 'superadmin/workers/history.html', context)
+
+
+
+def admin_account_details(request, pk):
+    account = WorkerAccount.objects.get(id=pk)
+    worker = account.worker
+
+    if request.method == "POST":
+        with transaction.atomic():
+            account = WorkerAccount.objects.get(id=request.POST['account_id'])
+            account.completed = True
+            account.save()
+            if worker.salary_types == 'monthly':
+                total_cost = float(worker.salary) - float(account.fines) - float(account.credits) + float(account.debits)
+            else:
+                total_cost = float(account.workerworks_cost) - float(account.fines) - float(account.credits) + float(account.debits)
+
+            # balance = Balance.objects.get(id=1)
+            # balance.uzs_balance = float(balance.uzs_balance) - total_cost
+            # balance.save()
+
+            # BalanceHistory.objects.create(
+            #     executor=request.user,
+            #     transaction_type='credit',
+            #     cost=total_cost,
+            #     currency='uzs',
+            #     comment="Oylik maosh"
+            # )
+
+        return redirect("superuser:worker-account", pk=account.id)
+
+
+
+    context = {
+        'worker':account.worker,
+        'accounts':[account]
+    }
+    return render(request, 'superadmin/workers/account.html', context)
+
+
+
+
+def admin_worker_stats(request):
+    workers = Worker.objects.all()
+
+    fields = []
+    field = {}
+
+    if request.method == "POST":
+        r = int(request.POST['rows_amount'])
+        for l in range(1, r+1):
+            try:
+                field = {
+                    "field_id": l,
+                    "worker_id": request.POST[f'worker{l}'],
+                    "cost": request.POST[f'cost{l}'],
+                    "amount": request.POST[f'amount{l}'],
+                }
+                print(field)
+                fields.append(field)
+            except:
+                pass
+        response = insert_worker_stats(fields, request)
+        return JsonResponse({'success': True, 'data': response})
+
+    context = {
+        'menu': 'workers-stats',
+        'workers': workers,
+    }
+
+    if 'rows' in request.GET:
+        arr = range(1, int(request.GET['rows'])+1)
+        context = {
+            'menu': 'production_send',
+            'workers': workers,
+            'rows': arr,
+            'rows_amount': request.GET['rows']
+        }
+    return render(request, 'superadmin/workers/stats.html', context)

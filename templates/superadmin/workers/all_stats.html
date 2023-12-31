@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+{% load mathfilters %}
+
+{% block sidebar_items %}
+{% include '../sidebar.html' %}
+{% endblock sidebar_items %}
+
+
+{% block content %}
+<div class="h3">{{worker.name}}</div>
+
+<div class="row">
+    <div class="col">
+        <div class="card my-3">
+            {% if view == 'credits' %}
+            <div class="card-body">
+                <div class="card-title h3">Avanslar</div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Miqdori</th>
+                            <th>Izoh</th>
+                            <th>Sana</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for credit in account.credits_history.all %}
+                        <tr>
+                            <td>{{credit.amount|intcomma}}</td>
+                            <td>{{credit.comment}}</td>
+                            <td>{{credit.created_at}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <th>Jami</th>
+                        <th>{{account.credits|intcomma}} so'm</th>
+                        <th></th>
+                    </tfoot>
+                </table>
+            </div>
+            {% endif %}
+
+
+            {% if view == 'debits' %}
+            <div class="card-body">
+                <div class="card-title h3">Bonuslar</div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Miqdori</th>
+                            <th>Izoh</th>
+                            <th>Sana</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for debit in account.debits_history.all %}
+                        <tr>
+                            <td>{{debit.amount|intcomma}}</td>
+                            <td>{{debit.comment}}</td>
+                            <td>{{debit.created_at}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <th>Jami</th>
+                        <th>{{account.debits|intcomma}} so'm</th>
+                        <th></th>
+                    </tfoot>
+                </table>
+            </div>
+            {% endif %}
+
+
+            {% if view == 'fines' %}
+            <div class="card-body">
+                <div class="card-title h3">Jarimalar</div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Miqdori</th>
+                            <th>Izoh</th>
+                            <th>Sana</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fine in account.fines_history.all %}
+                        <tr>
+                            <td>{{fine.amount|intcomma}}</td>
+                            <td>{{fine.comment}}</td>
+                            <td>{{fine.created_at}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <th>Jami</th>
+                        <th>{{account.fines|intcomma}} so'm</th>
+                        <th></th>
+                    </tfoot>
+                </table>
+            </div>
+            {% endif %}
+
+
+            {% if view == 'works' %}
+            <div class="card-body">
+                <div class="card-title h3">Ro'yxatga olingan ishlar</div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Miqdori</th>
+                            <th>Narxi</th>
+                            <th>Izoh</th>
+                            <th>Sana</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for work in account.workerworks_history.all %}
+                        <tr>
+                            <td>{{work.amount|intcomma}}</td>
+                            <td>{{work.cost|intcomma}} so'm</td>
+                            <td>{{work.comment}}</td>
+                            <td>{{work.created_at}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <th>Jami</th>
+                        <th></th>
+                        <th>{{account.workerworks_cost|intcomma}} so'm</th>
+                        <th></th>
+                    </tfoot>
+                </table>
+            </div>
+            {% endif %}
+
+
+        </div>
+    </div>
+</div>
+
+
+{% endblock content %}

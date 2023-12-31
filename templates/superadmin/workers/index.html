@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+
+{% block sidebar_items %}
+{% include '../sidebar.html' %}
+{% endblock sidebar_items %}
+
+
+{% block content %}
+
+<div class="d-flex align-items-center gap-3">
+    <h1 class="">
+        Ishchilar
+    </h1>
+
+    <div>
+        <!-- Modal Import  -->
+        <div class="modal fade" id="import" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalLabel">Ishchilarni ro'yxatga olish</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="type" value="insert_worker">
+                            <div class="mb-3">
+                                {{worker_form|crispy}}
+                            </div>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Yopish</button>
+                            <button type="submit" class="btn btn-primary">Kiritish</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#import">
+            <i class="fa fa-user"></i>* Ishchilarni kiritish
+        </button>
+
+    </div>
+</div>
+
+
+<div class="card p-4 mt-3">
+    <div class="card-title">Ro'yxatga olingan ishchilar</div>
+    <input type="text" id="myInput" class="form-control my-2" oninput="myFunction()" placeholder="Qidirish..">
+
+    <table class="table mb-4" id="myTable">
+        <thead>
+            <tr>
+                <th>F.I.O.</th>
+                <th>Ish turi</th>
+                <th>Telefon</th>
+                <th>Maosh va turi</th>
+                <th colspan="2">Avanslar</th>
+                <th colspan="2">Bonuslar</th>
+                <th colspan="2">Jarimalar</th>
+                <th>Manzil</th>
+                <th>Mashina</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for worker in workers %}
+            <tr>
+                <td>{{ worker.name }}</td>
+                <td>{{ worker.get_job_type_display}}</td>
+                <td>{{ worker.phone }}</td>
+                <td>{{ worker.get_salary_types_display }}</td>
+                <td>
+
+                    {% if worker.workeraccount_set.last.completed  %}
+                    {{0}}
+                    {% else %}
+                    {{worker.workeraccount_set.last.credits|intcomma}}
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="modal fade" id="credits{{worker.id}}" tabindex="-1" aria-labelledby="exampleModalLabel"
+                        aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="exampleModalLabel">Avans berish</h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="type" value="credits">
+                                        <input type="hidden" name="worker_id" value="{{worker.id}}">
+
+
+                                        <div class="mb-3">
+                                            <label for="">Avans miqdori</label>
+                                            <input type="text" name="credit_amount" placeholder="Avans miqdori"
+                                                class="form-control">
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="">Izoh *</label>
+                                            <input type="text" name="comment" placeholder="Izoh" class="form-control">
+                                        </div>
+
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Yopish</button>
+                                        <button type="submit" class="btn btn-primary">Saqlash</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="badge btn btn-sm bg-success" data-bs-toggle="modal"
+                        data-bs-target="#credits{{worker.id}}">
+                        <i class="fa fa-plus"></i>
+                    </button>
+
+                    <a class="badge btn btn-sm bg-primary" href="{% url 'superuser:worker-accounts' worker.pk %}"
+                        data-bs-target="#credits_row{{worker.id}}">
+                        <i class="fa fa-eye"></i>
+                    </a>
+                </td>
+                <td>
+                    {% if worker.workeraccount_set.last.completed  %}
+                    {{0}}
+                    {% else %}
+                    {{worker.workeraccount_set.last.debits|intcomma}}
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="modal fade" id="debits{{worker.id}}" tabindex="-1" aria-labelledby="exampleModalLabel"
+                        aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="exampleModalLabel">Avans berish</h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="type" value="debits">
+                                        <input type="hidden" name="worker_id" value="{{worker.id}}">
+
+
+                                        <div class="mb-3">
+                                            <label for="">Bonus miqdori</label>
+                                            <input type="text" name="debit_amount" placeholder="Bonus miqdori"
+                                                class="form-control">
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="">Izoh *</label>
+                                            <input type="text" name="comment" placeholder="Izoh" class="form-control">
+                                        </div>
+
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Yopish</button>
+                                        <button type="submit" class="btn btn-primary">Saqlash</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="badge btn btn-sm bg-success" data-bs-toggle="modal"
+                        data-bs-target="#debits{{worker.id}}">
+                        <i class="fa fa-plus"></i>
+                    </button>
+
+                    <a class="badge btn btn-sm bg-primary" href="{% url 'superuser:worker-accounts' worker.pk %}"
+                        data-bs-target="#credits_row{{worker.id}}">
+                        <i class="fa fa-eye"></i>
+                    </a>
+                </td>
+                <td>
+                    {% if worker.workeraccount_set.last.completed  %}
+                    {{0}}
+                    {% else %}
+                    {{ worker.workeraccount_set.last.fines|intcomma }}
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="modal fade" id="fines{{worker.id}}" tabindex="-1" aria-labelledby="exampleModalLabel"
+                        aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="exampleModalLabel">Jarima yozish</h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="type" value="fines">
+                                        <input type="hidden" name="worker_id" value="{{worker.id}}">
+
+
+                                        <div class="mb-3">
+                                            <label for="">Jarima miqdori</label>
+                                            <input type="text" name="fine_amount" placeholder="Bonus miqdori"
+                                                class="form-control">
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="">Izoh *</label>
+                                            <input type="text" name="comment" placeholder="Izoh" class="form-control">
+                                        </div>
+
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Yopish</button>
+                                        <button type="submit" class="btn btn-primary">Saqlash</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="badge btn btn-sm bg-success" data-bs-toggle="modal"
+                        data-bs-target="#fines{{worker.id}}">
+                        <i class="fa fa-plus"></i>
+                    </button>
+
+                    <a class="badge btn btn-sm bg-primary" href="{% url 'superuser:worker-accounts' worker.pk %}"
+                        data-bs-target="#credits_row{{worker.id}}">
+                        <i class="fa fa-eye"></i>
+                    </a>
+                </td>
+                <td>{{ worker.address }}</td>
+                <td>{{ worker.car_number }} - {{worker.driver}}</td>
+                <td><a class="badge btn btn-sm bg-primary" href="{% url 'superuser:worker-details' worker.pk %}">
+                        <i class="fa fa-edit"></i>
+                    </a></td>
+            </tr>
+
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+
+<script>
+    function myFunction() {
+        var input, filter, table, tr, td, i, txtValue;
+        input = document.getElementById("myInput");
+        filter = input.value.toUpperCase();
+        table = document.getElementById("myTable");
+        tr = table.getElementsByTagName("tr");
+
+        for (i = 0; i < tr.length; i++) {
+            td = tr[i].getElementsByTagName("td")[0];
+            if (td) {
+                txtValue = td.textContent || td.innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+    }
+</script>
+
+
+{% endblock content %}

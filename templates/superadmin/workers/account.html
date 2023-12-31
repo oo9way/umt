@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+{% load mathfilters %}
+
+{% block sidebar_items %}
+{% include '../sidebar.html' %}
+{% endblock sidebar_items %}
+
+
+{% block content %}
+
+{% for account in accounts %}
+<div class="card">
+    <div class="card-body">
+        <div class="card-title h3">{{worker.name}}</div>
+        <table class="table">
+            <tr>
+                <th>Holat :</th>
+                <td>
+                    {{ account.created_at|date:"F" }}
+                    {% if account.completed %}
+                    <span class="badge badge-sm bg-success">Oylik yopilgan</span>
+                    {% else %}
+                    <span class="badge badge-sm bg-danger">Oylik yopilmagan</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if account.completed%}
+                    Oylik yopilgan
+                    {% else %}
+                    <form action="" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="account_id" value="{{account.id}}">
+                        <button type="submit" class="btn btn-sm btn-warning">
+                            <i class="fa fa-check"></i>
+                            Oylikni yopish
+                        </button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <th>Jami avanslar:</th>
+                <td>{{account.credits|intcomma}} so'm</td>
+                <td>
+                    <a href="{% url 'superuser:worker-stats' worker.id account.id %}?type=credits" class="btn btn-primary btn-sm"><i class="fa fa-eye"></i> Ma'lumotlar</a>
+                </td>
+            </tr>
+
+            <tr>
+                <th>Jami bonuslar:</th>
+                <td>{{account.debits|intcomma}} so'm</td>
+                <td>
+                    <a href="{% url 'superuser:worker-stats' worker.id account.id %}?type=debits" class="btn btn-primary btn-sm"><i class="fa fa-eye"></i> Ma'lumotlar</a>
+                </td>
+            </tr>
+
+            <tr>
+                <th>Jami jarimalar:</th>
+                <td>{{account.fines|intcomma}} so'm</td>
+                <td>
+                    <a href="{% url 'superuser:worker-stats' worker.id account.id %}?type=fines" class="btn btn-primary btn-sm"><i class="fa fa-eye"></i> Ma'lumotlar</a>
+                </td>
+            </tr>
+
+            <tr>
+                <th>Ish haqqi:</th>
+                <td>
+                    {% if worker.salary_types == 'monthly' %}
+                    {{worker.salary|intcomma}}
+                    {% else %}
+                    {{account.workerworks_cost|intcomma}}
+                    {% endif %} so'm</td>
+                <td>
+                    {% if worker.salary_types == 'monthly' %}
+                    <button class="btn btn-sm btn-primary" disabled><i class="fa fa-eye"></i> Ma'lumotlar</button>
+                    {% else %}
+                    <a href="{% url 'superuser:worker-stats' worker.id account.id %}?type=works" class="btn btn-primary btn-sm"><i class="fa fa-eye"></i> Ma'lumotlar</a>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <th>Yakuniy oylik ish haqqi</th>
+                <td>{% if worker.salary_types == 'monthly' %}
+                    {{worker.salary|sub:account.credits|sub:account.fines|addition:account.debits|intcomma}}
+                    {% else %}
+                    {{account.workerworks_cost|sub:account.credits|sub:account.fines|addition:account.debits|intcomma}} 
+                    {% endif %}
+                    so'm
+                </td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+</div>
+{% endfor %}
+
+
+{% endblock content %}

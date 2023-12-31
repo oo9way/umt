@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+{% load mathfilters %}
+
+{% block sidebar_items %}
+{% include '../sidebar.html' %}
+{% endblock sidebar_items %}
+
+
+{% block content %}
+<div class="d-flex align-items-center gap-3">
+    <h1 class="">
+        Yopilmagan ish haqqilari
+    </h1>
+</div>
+
+
+<div class="card p-4 mt-3">
+    <div class="card-title">Yopilmagan ish haqqilari</div>
+    <table class="table mb-4" id="materialTable">
+        <thead>
+            <tr>
+                <th>F.I.O.</th>
+                <th>Oy</th>
+                <th>Statistika</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for account in accounts %}
+            <tr>
+                <td>{{ account.worker.name }}</td>
+                <td>{{ account.created_at|date:"F"}}</td>
+                <td>
+                    <a href="{% url 'superuser:worker-account' account.id%}" class="btn btn-sm btn-success">
+                        Oylik statistika
+                    </a>
+                </td>
+            </tr>
+
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+
+
+{% endblock content %}

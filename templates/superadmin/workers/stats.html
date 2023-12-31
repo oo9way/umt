@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+{% load mathfilters %}
+
+{% block sidebar_items %}
+{% include '../sidebar.html' %}
+{% endblock sidebar_items %}
+
+
+{% block content %}
+
+<div class="d-flex align-items-center gap-3">
+    <h1 class="">
+        Ishchilar
+    </h1>
+</div>
+
+<style>
+    .inline-form{
+        display: grid;
+        grid-template-columns: 30% 30% 30% 10%;
+    }
+
+    .inline-form-group{
+        display: flex;
+        align-items: center;
+        justify-content: start;
+    }
+    .inline-form-group input, .inline-form-group select {
+        width: 100%;
+        border: 1px solid #bcbcbc;
+        margin: 3px;
+        border-radius: 3px;
+        padding-left: 10px;
+    }
+    .inline-form-errors{
+        font-size: 11px;
+    }
+</style>
+
+
+
+
+{% if rows %}
+<div class="card mt-3 d-none" id="checkedsCard">
+    <div class="card-body">
+        <div class="card-title">Ro'yxatga olinganlar</div>
+        <div id="checked">
+
+        </div>
+
+        <a href="{% url 'superuser:register-workers-stats'%}" class="btn btn-secondary mt-3">Ortga</a>
+
+    </div>
+</div>
+
+<div class="card mt-3">
+    <div class="card-body">
+        <form  method="post" id="my-form">
+            <input type="hidden" name="rows_amount" value="{{rows_amount}}">
+            {% csrf_token %}
+            {% for row in rows %}
+            <div class="inline-form get-inline-form" id="inlineForm{{row}}">
+                <div class="inline-form-group">
+                    <select class="input my-select select-search" name="worker{{row}}" required>
+                        <option value="">Ishchini tanlang</option>
+                        {% for worker in workers %}
+                        <option value="{{worker.id}}">{{worker.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="inline-form-group">
+                    <input type="number" name="amount{{row}}" class="input" placeholder="Ish miqdori">
+                </div>
+                <div class="inline-form-group">
+                    <input type="text" name="cost{{row}}" class="input" placeholder="Ish narxi (dona)">
+                </div>
+                <div class="inline-form-error mx-3 d-flex align-items-center d-none text-danger" id="errorCheck{{row}}">
+                    <i class="fa fa-times"></i>
+                </div>
+
+                <div class="inline-form-success mx-3 d-flex align-items-center d-none text-success" id="successCheck{{row}}">
+                    <i class="fa fa-check"></i>
+                </div>
+            </div>
+            <div id="error-message{{row}}" class="inline-form-errors text-danger mb-1 py-1 d-none">
+                <div>
+            
+                </div>
+            </div>
+            {% endfor %}
+            <a href="{% url 'superuser:register-workers-stats'%}" class="btn btn-secondary mt-3">Ortga</a>
+            <button type="button" id="submitBtn" onclick="submitForm()" class="btn btn-primary mt-3"><i id="spinner" class="d-none fa fa-spinner fa-spin"></i> Saqlash </button>
+        </form>
+    </div>
+</div>
+{% else %}
+<div class="card p-4 mt-3">
+    <form method="get" class="mt-3 form">
+        <label>Qatorlar soni</label>
+        <input type="text" autocomplete="off" class="form-control my-3" required name="rows" id="rows">
+        <button type="submit" class="btn btn-primary">Qo'shish</button>
+        <div class="form"></div>
+    </form>
+</div>
+{% endif %}
+
+
+<script>
+    $(document).ready(function () {
+        $('.my-select').select2();
+    });
+</script>
+
+<script>
+    const inputs = document.querySelectorAll('.input');
+    let currentInputIndex = 0;
+
+    const form = document.getElementById("my-form");
+
+    form.addEventListener('submit', function (even) {
+        even.preventDefault();
+    })
+
+    // Set focus on first input
+    inputs[currentInputIndex].focus();
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'ArrowRight') {
+            // Move focus to the next input on the right
+            currentInputIndex = Math.min(currentInputIndex + 1, inputs.length - 1);
+            inputs[currentInputIndex].focus();
+        } else if (event.key === 'ArrowLeft') {
+            // Move focus to the next input on the left
+            currentInputIndex = Math.max(currentInputIndex - 1, 0);
+            inputs[currentInputIndex].focus();
+        }
+    });
+
+
+    function submitForm() {
+        const btn = document.getElementById("submitBtn")
+        const form = document.getElementById("my-form");
+        const formData = new FormData(form)
+        const spinner = document.getElementById("spinner")
+        
+        btn.classList.add("disabled")
+        spinner.classList.remove('d-none')
+
+
+
+        const errorFields = document.getElementsByClassName("inline-form-errors")
+            for (let t = 0; t < errorFields.length; t++) {
+                errorFields[t].innerText = ""
+            }
+        
+            fetch("", {
+                method: "POST",
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("spinner").classList.add("d-none")
+                    btn.classList.remove("disabled")
+                    const getData = data.data;
+                    const success = getData.success;
+                    success.forEach((field, index) => {
+                        document.getElementById("checkedsCard").classList.remove('d-none')
+                        document.getElementById("errorCheck" + field.field_id).classList.add('d-none');
+                        document.getElementById("successCheck" + field.field_id).classList.remove('d-none');
+                        const row = document.getElementById("inlineForm" + field.field_id)
+                        const checkeds = document.getElementById("checked")
+                        
+                        row.classList.remove("get-inline-form")
+                        form.removeChild(row)
+                        row.removeAttribute('id')
+                        
+                        checkeds.appendChild(row)
+                    });
+
+                    const error = getData.errors;
+
+                    if (error.length == 0) {
+                        form.style.display = 'none';
+                    }
+
+                    if (error.length > 0) {
+                        error.forEach((field, index) => {
+                            document.getElementById("successCheck" + field.field_id).classList.add('d-none');
+                            document.getElementById("errorCheck" + field.field_id).classList.remove('d-none');
+                            document.getElementById("error-message" + field.field_id).classList.remove('d-none');
+                            const old_error = document.getElementById("error-message" + field.field_id).innerText
+                            document.getElementById("error-message" + field.field_id).innerText = old_error + index + '. ' + field.msg + '. ';
+
+                        })
+                    }
+
+                })
+                .catch((error) => {
+                    console.error('Error:', error)
+                })
+        }
+    
+
+
+</script>
+
+
+{% endblock content %}

@@ -11,6 +11,7 @@ from materials.models import (
     MaterialType,
     SpareStorage,
     SpareType,
+    Worker,
 )
 from user.models import User
 
@@ -169,4 +170,21 @@ class UserForm(forms.ModelForm):
             "username":"Login",
             "password":"Parol",
             "role":"Status"
+        }
+        
+class AdminWorker(forms.ModelForm):
+    class Meta:
+        model = Worker
+        fields = ['name', 'phone', 'job_type', 'salary', 'salary_types', 'address', 'car_number', 'driver']
+        exclude = ['credits', 'debits', 'fines', 'workerworks']
+
+        labels = {
+            'name': "F.I.O",
+            'phone': "Telefon raqam",
+            'job_type': "Ish turi",
+            'salary': "Maosh miqdori",
+            "salary_types": "Maosh turi",
+            "address": "Manzil",
+            "car_number": "Mashina raqami",
+            "driver": "Haydovchi"
         }

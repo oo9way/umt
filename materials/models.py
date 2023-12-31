@@ -692,3 +692,5 @@ class ProductHistory(models.Model):
     details = models.JSONField()
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+

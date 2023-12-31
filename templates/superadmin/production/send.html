@@ -1,0 +1,282 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+
+
+{% block choice %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" />
+{% endblock choice %}
+
+
+{% block sidebar_items %}
+{% include '../sidebar.html' %}
+{% endblock sidebar_items %}
+
+
+{% block content %}
+
+
+<h3>YaTMga mahsulot yuborish</h3>
+<hr>
+
+
+
+
+<div class="card p-4 mt-3">
+    <form method="get" class="mt-3 form">
+        <label>Qatorlar soni</label>
+        <input type="text" autocomplete="off" class="form-control my-3" required name="rows" id="rows">
+        <button type="submit" class="btn btn-primary">Qo'shish</button>
+        <div class="form"></div>
+    </form>
+</div>
+
+<style>
+    .inline-form, .inline-form-group{
+        display: inline-block;
+        padding: 0;
+        margin: 0;
+    }
+    .inline-form, .columns{
+        text-align: center;
+        width: 100%;
+        display: grid;
+        grid-template-columns: 15% 15% 13% 13% 13% 13% 13% 5%;
+    }
+    .inline-form-group input{
+        width: 100%;
+        padding: 10px;
+        border: none;
+    }
+    .inline-form-group{
+        padding: 0.7px;
+        border: 0.5px solid #bcbcbc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .inline-form-errors{
+        font-size: 11px;
+    }
+</style>
+
+<div class="card mt-3 d-none" id="checkedsCard">
+    <div class="card-body">
+        <div class="card-title">Ro'yxatga olinganlar</div>
+        <div id="checked">
+
+        </div>
+    </div>
+</div>
+
+
+
+{% if rows %}
+<form action="" method="post" id="my-form">
+    {% csrf_token %}
+    <input type="hidden" name="rows_amount" value="{{rows_amount}}">
+    <div class="card p-4 mt-3" id="formrows">
+        <div class="row my-3">
+            <div class="col-sm-3">
+                <label for="date">Sanani belgilang</label>
+                <input type="date" class="form-control d-inline-block" name="date" id="date">
+            </div>
+        </div>
+        <div class="columns">
+            <div class="column">Ishchilar</div>
+            <div class="column">Dizayn turi</div>
+            <div class="column">Miqdori</div>
+            <div class="column">2-sort (dona)</div>
+            <div class="column">2-sort (gramm)</div>
+            <div class="column">3-sort (gramm)</div>
+            <div class="column">Ish narxi (so'm)</div>
+            <div class="column"></div>
+        </div>
+        {% for row in rows %}
+        <div class="get-inline-form inline-form " id="inlineForm{{row}}">
+            <div class="inline-form-group">
+                <select class="input my-select select-search" name="worker{{row}}" required>
+                    <option value="">Ishchini tanlang</option>
+                    {% for worker in workers %}
+                    <option value="{{worker.id}}">{{worker.name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="inline-form-group">
+                <select class="input my-select select-search" name="design{{row}}" required>
+                    <option value="">Dizaynni tanlang</option>
+                    {% for design in designs %}
+                    <option value="{{design.id}}">{{design.name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        
+            <div class="inline-form-group">
+                <input type="text" class="input" autocomplete="off" value="0" name="amount{{row}}" placeholder="Miqdori">
+            </div>
+        
+            <div class="inline-form-group">
+                <input type="text" class="input" autocomplete="off" value="0" name="second_type_per{{row}}" placeholder="2-sort (dona)">
+            </div>
+        
+            <div class="inline-form-group">
+                <input type="text" class="input" autocomplete="off" value="0" name="second_type_gr{{row}}" placeholder="2-sort (gr)">
+            </div>
+        
+            <div class="inline-form-group">
+                <input type="text" class="input" autocomplete="off" value="0" name="third_type{{row}}" placeholder="3-sort (gr)">
+            </div>
+
+            <div class="inline-form-group">
+                <input type="text" class="input" autocomplete="off" value="0" name="cost{{row}}" placeholder="Ish narxi (so'm)">
+            </div>
+            <div class="inline-form-group d-none" id="checkMark{{row}}">
+                <span class="text-success">
+                    <i class="fas fa-check"></i>
+                </span>
+            </div>
+
+            <div class="inline-form-group d-none" id="closeMark{{row}}">
+                <span class="text-danger">
+                    <i class="fas fa-times"></i>
+                </span>
+            </div>
+        </div>
+
+        <div id="error-message{{row}}" class="inline-form-errors text-danger mb-1 py-1 d-none">
+            <div>
+                
+            </div>
+        </div>
+        
+        {% endfor %}
+        <div class="mt-3">
+            <button type="button" onclick="setDates('{{rows_amount}}')" class="btn btn-success">Bugungi sanani
+                belgilash</button>
+            <button type="button" id="submitBtn" onclick="submitForm()" class="btn btn-primary"> <i id="spinner" class="d-none fas fa-spinner fa-spin"></i> Saqlash</button>
+        </div>
+    </div>
+
+</form>
+{% endif %}
+
+<script src="{% static 'assets/js/pagination.js'%}"></script>
+
+<script>
+    function setDates(n) {
+        document.getElementById(`date`).valueAsDate = new Date();
+        
+    }
+
+    getPagination("table")
+</script>
+
+<script>
+    const inputs = document.querySelectorAll('.input');
+        let currentInputIndex = 0;
+
+        // Set focus on first input
+        inputs[currentInputIndex].focus();
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'ArrowRight') {
+                // Move focus to the next input on the right
+                currentInputIndex = Math.min(currentInputIndex + 1, inputs.length - 1);
+                inputs[currentInputIndex].focus();
+            } else if (event.key === 'ArrowLeft') {
+                // Move focus to the next input on the left
+                currentInputIndex = Math.max(currentInputIndex - 1, 0);
+                inputs[currentInputIndex].focus();
+            }
+        });
+
+</script>
+
+<script>
+    $(document).ready(function () {
+        $('.my-select').select2();
+    });
+</script>
+
+
+<script>
+    const form = document.getElementById("my-form");
+    
+    form.addEventListener('submit', function(even){
+        even.preventDefault();
+    })
+
+    function getSuccess(field_name){
+        document.getElementsByName(field_name)[0].style.border="solid 1px #04AA6D";
+    }
+
+    function submitForm() {
+        
+        const form = document.getElementById("my-form");
+        const formData = new FormData(form)
+        const errorFields = document.getElementsByClassName("inline-form-errors")
+        
+        
+        document.getElementById("spinner").classList.remove("d-none")
+        document.getElementById("submitBtn").classList.add("disabled")
+
+        for (let t = 0; t < errorFields.length; t++) {
+            errorFields[t].innerText = ""
+            
+        }
+        fetch("", {
+            method: "POST",
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            const getData = data.data;
+            const success  = getData.success;
+            document.getElementById("spinner").classList.add("d-none")
+            document.getElementById("submitBtn").classList.remove("disabled")
+            success.forEach(field => {
+                if(field.input !== 'all'){
+                    getSuccess(field.input + field.field_id)
+                }else{
+                    document.getElementById("spinner").classList.add("d-none")
+                    document.getElementById("submitBtn").classList.remove("disabled")
+                    
+                    document.getElementById("checkMark"+field.field_id).classList.remove('d-none');
+                    document.getElementById("closeMark" + field.field_id).classList.add('d-none');
+                    const row = document.getElementById("inlineForm"+field.field_id)
+                    const checkeds = document.getElementById("checked")
+                    row.classList.remove("get-inline-form")
+                    row.removeAttribute('id')
+                    checkeds.appendChild(row)
+                    customForm = document.getElementById("formrows")
+                    row.remove()
+                }
+            });
+
+            const error = getData.errors;
+            console.log(error)
+            console.log(error.length)
+            if(error.length > 0){
+                error.forEach((field, index) => {
+                    console.log(field)
+                    document.getElementById("checkMark" + field.field_id).classList.add('d-none');
+                    document.getElementById("closeMark" + field.field_id).classList.remove('d-none');
+                    document.getElementById("error-message" + field.field_id).classList.remove('d-none');
+                    const old_error = document.getElementById("error-message" + field.field_id).innerText + ' '
+                    document.getElementById("error-message" + field.field_id).innerText = old_error + (index + 1) + ') ' + field.msg + '.  ';
+                })
+            }
+        })
+        .catch((error) => {
+            console.log('Error:', error)
+        })
+    }
+
+
+</script>
+
+{% endblock content %}

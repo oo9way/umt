@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+{% load mathfilters %}
+
+{% block sidebar_items %}
+{% include '../sidebar.html' %}
+{% endblock sidebar_items %}
+
+
+{% block content %}
+
+<h1>Ish haqqi tarixi</h1>
+<div class="card mt-3 p-3">
+    <div class="card-title h3">
+        Qidirish
+    </div>
+    <form method="get">
+        <div class="row align-items-end">
+            <div class="col">
+                <div class="form-group mt-3">
+                    <label for="year">Yil?</label>
+                    <input type="number" placeholder="2018" name="year" id="year" class="form-control mt-2" required>
+                </div>
+            </div>
+            <div class="col">
+                <div class="form-group mt-3">
+                    <label for="month">Oy?</label>
+                    <select name="month" id="month" class="form-control" required>
+                        <option value="all">Barcha</option>
+                        <option value="1">Yanvar</option>
+                        <option value="2">Fevral</option>
+                        <option value="3">Mart</option>
+                        <option value="4">Aprel</option>
+                        <option value="5">May</option>
+                        <option value="6">Iyun</option>
+                        <option value="7">Iyul</option>
+                        <option value="8">Avgust</option>
+                        <option value="9">Sentabr</option>
+                        <option value="10">Oktabr</option>
+                        <option value="11">Noyabr</option>
+                        <option value="12">Dekabr</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col">
+                <div class="form-group mt-3">
+                    <label for="type">Holat</label>
+                    <select class="form-control" name="type" required>
+                        <option value="true">Yopilgan</option>
+                        <option value="false">Yopilmagan</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-success mt-3">
+            <i class="fa fa-search"></i>
+            Qidirish
+        </button>
+    </form>
+</div>
+
+{% if query %}
+<div class="card mt-3 p-3">
+    <div class="card-title">Qidiruv natijalari</div>
+    <table class="table table-responsive">
+        <thead>
+            <tr>
+                <th>F.I.O.</th>
+                <th>Oy</th>
+                <th>Holat</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in query %}
+            <tr>
+                <td>{{item.worker.name}}</td>
+                <td>{{item.created_at|date:"F"}}</td>
+                <td>
+                    {% if item.completed == True %}
+                    <span class="badge bg-success badge-sm">Yopilgan</span>
+                    {% else %}
+                    <span class="badge bg-danger badge-sm">Yopilmagan</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'superuser:worker-account' item.id%}" class="btn btn-sm btn-success">
+                        Oylik statistika
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="d-flex align-items-start gap-3">
+        <div class="form-group d-flex align-items-center gap-3">
+            <label>Uzunlik</label>
+            <select class="form-control" name="state" id="maxRows" >
+                <option value="5000">Barchasini ko'rsatish</option>
+                <option value="5">5 ta</option>
+                <option value="10">10 ta</option>
+                <option value="15">15 ta</option>
+                <option value="20">20 ta</option>
+                <option value="50">50 ta</option>
+                <option value="70">70 ta</option>
+                <option value="100">100 ta</option>
+            </select>
+
+        </div>
+        <div class='pagination-container'>
+            <nav>
+                <ul class="pagination">
+                    <li class="page-item" data-page="prev">
+                        <span class="page-link">
+                            <i class="fa fa-chevron-left"></i> <span class="sr-only">(current)
+                            </span></span>
+                    </li>
+                    <li class="page-item" data-page="next" id="prev">
+                        <span class="page-link">
+                            <i class="fa fa-chevron-right"></i> <span class="sr-only">(current)
+                            </span></span>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script src="{% static 'assets/js/pagination.js'%}"></script>
+<script>
+    getPagination("table")
+</script>
+
+
+{% endblock content %}
