@@ -13,6 +13,7 @@ from django.views.generic import (
 )
 from superuser.permissions import IsAdminRole
 from materials.models import (
+    Finance,
     MaterialStorage,
     MaterialStorageHistory,
     MaterialType,
@@ -42,6 +43,7 @@ from django.db import transaction
 
 from superuser.forms import (
     AdminWorker,
+    FinanceForm,
     UserForm,
     InsertLabel,
     InsertLabelTypeForm,
@@ -1168,3 +1170,41 @@ def admin_worker_stats(request):
             'rows_amount': request.GET['rows']
         }
     return render(request, 'superadmin/workers/stats.html', context)
+
+
+
+
+class FinanceView(IsAdminRole, ListView):
+    model = Finance
+    paginate_by = 20
+    ordering = ["-id"]
+    template_name = "superadmin/finance/list_create.html"
+    date_from = ""
+    date_to = ""
+
+    def get_queryset(self):
+        self.date_from = self.request.GET.get("date_from", "")
+        self.date_to = self.request.GET.get("date_to", "")
+        queryset = super().get_queryset()
+        if self.date_from:
+            queryset = queryset.filter(created_at__gte=self.date_from)
+
+        if self.date_to:
+            queryset = queryset.filter(created_at__lte=self.date_to)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["form"] = FinanceForm
+        context["date_from"] = self.date_from
+        context["date_to"] = self.date_to
+        return context
+
+    def post(self, request, *args, **kwargs):
+        form = FinanceForm(self.request.POST)
+        if form.is_valid():
+            finance = form.save(commit=False)
+            finance.executor = self.request.user
+            finance.save()
+            return redirect("superuser:finance")

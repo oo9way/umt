@@ -702,10 +702,20 @@ class Finance(models.Model):
         ('debit', "Kirim"),
     )
     
-    cost = models.CharField(max_length=255, default='0')
-    comment = models.CharField(max_length=255)
+    FROM_WHERE = (
+        ('sales',"Savdo"),
+        ('loan', "Qarz"),
+        ('personal', "Shaxsiy mablag'"),
+    )
     
-    type = models.CharField(max_length=16, choices=FINANCE_TYPES, default="credit")
+    executor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    
+    cost = models.CharField(max_length=255, default='0', verbose_name='Summa')
+    price_type = models.CharField(choices=CURRENCIES, default="uzs", max_length=5, verbose_name='Pul birligi')
+    
+    comment = models.CharField(max_length=255, verbose_name='Izoh')
+    
+    type = models.CharField(max_length=16, choices=FINANCE_TYPES, default="credit", verbose_name="Kirim / Chiqim")
     
     updated_at = models.DateTimeField(auto_now_add=True)
     created_at = models.DateTimeField(auto_now=True)

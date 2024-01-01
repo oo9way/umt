@@ -4,6 +4,7 @@ from superuser.views import (
     BrakListView,
     DesignView,
     ExpenditureView,
+    FinanceView,
     HomePageView,
     LabelExportView,
     LabelHistoryListView,
@@ -179,6 +180,11 @@ urlpatterns +=[
     path("dashboard/profiles/", UserView.as_view(), name="profiles"),
 ]
 
+# FINANCE
+urlpatterns +=[
+    path("dashboard/finance/", FinanceView.as_view(), name="finance"),
+]
+
 # WORKERS
 
 urlpatterns +=[
@@ -190,10 +196,6 @@ urlpatterns +=[
     path('dashboard/workers/unclosed-accounts/', admin_unclosed_salaries, name='unclosed-accounts'),
     path('dashboard/workers/history/', admin_accounts_history, name='accounts-history'),
     path('dashboard/workers/stats/', admin_worker_stats, name='register-workers-stats'),
-
-
-
-
 ]
 
 
@@ -241,13 +243,21 @@ urlpatterns += [
         GenerateExpenditureExcel.as_view(),
         name="expenditure_xls",
     ),
+    
+    path(
+        "dashboard/finance/generate-xls/",
+        GenerateFinanceExcel.as_view(),
+        name="finance_xls",
+    ),
 ]
+
+
 
 
 # TODO
 # * Manager profiles +
-# * Workers
-# * Production / Send YAIM
-# * Yaim / Send Sklad
-# * Tayyor mahsulot / Savdo
+# * Workers +
+# * Production / Send YAIM + 
+# * Yaim / Send Sklad 
+# * Tayyor mahsulot / Savdo 
 # * Nazoratchi / Sotuvchi / Zapchast / Seryo ----> Profillar

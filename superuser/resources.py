@@ -2,6 +2,7 @@ from import_export import resources, fields, widgets
 from materials.models import (
     Design,
     Expenditure,
+    Finance,
     LabelStorage,
     LabelStorageHistory,
     MaterialStorage,
@@ -141,5 +142,17 @@ class ExpenditureModelResource(resources.ModelResource):
     
     class Meta:
         model = Expenditure
+        exclude = "id"
+        
+        
+
+class FinanceModelResource(resources.ModelResource):
+    executor = fields.Field(column_name="Bajaruvchi", attribute="executor")
+    comment = fields.Field(column_name="Izoh", attribute="comment")
+    cost = fields.Field(column_name="Miqdori", attribute="cost")
+    price_type = fields.Field(column_name="Pul birligi", attribute="get_price_type_display")
+    type = fields.Field(column_name="Kirim & Chiqim", attribute="get_type_display")
+    class Meta:
+        model = Finance
         exclude = "id"
         

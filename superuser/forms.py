@@ -4,6 +4,7 @@ from materials.models import (
     DesignField,
     DesignImmutable,
     Expenditure,
+    Finance,
     ImmutableBalance,
     LabelStorage,
     LabelType,
@@ -188,3 +189,10 @@ class AdminWorker(forms.ModelForm):
             "car_number": "Mashina raqami",
             "driver": "Haydovchi"
         }
+        
+        
+class FinanceForm(forms.ModelForm):
+    class Meta:
+        model = Finance
+        fields = ('cost', 'price_type', 'comment', 'type',)
+        
