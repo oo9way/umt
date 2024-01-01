@@ -35,6 +35,8 @@ from superuser.views import (
     admin_design_details,
     admin_edit_design_materials,
     admin_insert_design_materials,
+    admin_pre_production_send,
+    admin_pre_production_send_list,
     admin_unclosed_salaries,
     admin_worker_account,
     admin_worker_credits,
@@ -183,6 +185,13 @@ urlpatterns +=[
 # FINANCE
 urlpatterns +=[
     path("dashboard/finance/", FinanceView.as_view(), name="finance"),
+]
+
+# PRE PRODUCTION
+urlpatterns +=[
+    path("dashboard/pre-production/", admin_pre_production_send_list, name="pre-production"),
+    path('dashboard/pre-production/send-list/<int:pk>', admin_pre_production_send,
+         name='pre-production-send'),
 ]
 
 # WORKERS

@@ -13,10 +13,18 @@ from django.views.generic import (
 )
 from superuser.permissions import IsAdminRole
 from materials.models import (
+    DesignField,
+    DesignImmutable,
+    DesignLabel,
     Finance,
     MaterialStorage,
     MaterialStorageHistory,
     MaterialType,
+    PreProduction,
+    PreProductionHistory,
+    Product,
+    ProductStock,
+    ProductStockHistory,
     ProductionMaterialStorage,
     ProductionMaterialStorageHistory,
     SpareStorage,
@@ -40,8 +48,10 @@ from superuser.utils.check_amount import check_amount, insert_worker_stats
 from user.models import User
 
 from django.db import transaction
+from django.db.models import Sum
 
 from superuser.forms import (
+    AdminProductStockForm,
     AdminWorker,
     FinanceForm,
     UserForm,
@@ -1208,3 +1218,260 @@ class FinanceView(IsAdminRole, ListView):
             finance.executor = self.request.user
             finance.save()
             return redirect("superuser:finance")
+
+
+
+
+def admin_pre_production_send_list(request):
+    products = Product.objects.all()
+    designs = Design.objects.all()
+
+    if request.method == "POST" and request.POST['type'] == 'export':
+        if request.POST['brak'] == 'second':
+            with transaction.atomic():
+                design = Design.objects.get(id=request.POST['design'])
+                product = Product.objects.get(design_type=design)
+                old_brak = Brak.objects.filter(design=design).filter(
+                    status='active').filter(sort_type='second')
+
+                if request.POST['per_amount'] != '' and float(request.POST['per_amount']) > 0:
+                    c_per_amount = float(request.POST['per_amount'])
+                    if float(product.amount) < float(request.POST['per_amount']):
+                        messages.error(
+                            request, 'Ushbu miqdorda brak mahsulot mavjud emas', extra_tags='danger')
+                        return redirect('superuser:pre-production')
+
+                    product.amount = float(
+                        product.amount) - float(request.POST['per_amount'])
+                    product.save()
+
+                    if len(old_brak) > 0:
+                        first_brak = old_brak.first()
+                        # old_brak.gr_amount = float(
+                        #     old_brak.gr_amount) + float(request.POST['gr_amount'])
+                        first_brak.per_amount = float(
+                            first_brak.per_amount) + float(request.POST['per_amount'])
+                        first_brak.save()
+                else:
+                    c_per_amount = 0
+
+                if request.POST['gr_amount'] != '' and float(request.POST['gr_amount']) > 0:
+                    c_gr_amount = float(request.POST['gr_amount'])
+                    gramm = 0
+                    for d in design.designfield_set.all():
+                        gramm += float(d.amount) / float(design.amount)
+                    print(gramm)
+
+                    per_amount = int(float(request.POST['gr_amount']) / gramm)
+                    if float(product.amount) < per_amount:
+                        messages.error(
+                            request, 'Ushbu miqdorda brak mahsulot mavjud emas', extra_tags='danger')
+                        return redirect('superuser:]pre-production')
+
+                    product.amount = float(product.amount) - per_amount
+                    product.save()
+
+                    if len(old_brak) > 0:
+                        first_brak = old_brak.first()
+                        first_brak.gr_amount = float(
+                            first_brak.gr_amount) + float(request.POST['gr_amount'])
+                        first_brak.save()
+                else:
+                    c_gr_amount = 0
+
+                if len(old_brak) == 0:
+                    Brak.objects.create(
+                        design=design,
+                        gr_amount=c_gr_amount,
+                        per_amount=c_per_amount,
+                        status='active',
+                        sort_type='second'
+                    )
+                brak_amount = f"{c_gr_amount} gramm, {per_amount} dona"
+
+        if request.POST['brak'] == 'third':
+            with transaction.atomic():
+                design = Design.objects.get(id=request.POST['design'])
+                product = Product.objects.get(design_type=design)
+                old_brak = Brak.objects.filter(design=design).filter(
+                    status='active').filter(sort_type='third')
+
+                if request.POST['gr_amount'] != '' and float(request.POST['gr_amount']) > 0:
+                    gramm = 0
+                    for d in design.designfield_set.all():
+                        gramm += float(d.amount) / float(design.amount)
+
+                    per_amount = int(float(request.POST['gr_amount']) / gramm)
+                    if float(product.amount) < per_amount:
+                        messages.error(
+                            request, 'Ushbu miqdorda brak mahsulot mavjud emas', extra_tags='danger')
+                        return redirect('superuser:pre-production')
+
+                    product.amount = float(product.amount) - per_amount
+                    product.save()
+
+                    if len(old_brak) > 0:
+                        first_brak = old_brak.first()
+                        first_brak.gr_amount = float(
+                            first_brak.gr_amount) + float(request.POST['gr_amount'])
+                        first_brak.save()
+                    else:
+                        Brak.objects.create(
+                            design=design,
+                            gr_amount=request.POST['gr_amount'],
+                            per_amount=0,
+                            status='active',
+                            sort_type='third'
+                        )
+                    brak_amount = request.POST['gr_amount']
+
+        PreProductionHistory.objects.create(
+            executor=request.user,
+            action='export',
+            amount=brak_amount,
+            amount_type='gr',
+            price=0,
+            price_type='usd',
+            where='brak',
+        )
+
+        messages.success(request, 'Brak mahsulot chiqarildi')
+        return redirect('superuser:pre-production')
+
+    context = {
+        'products': products,
+        'designs': designs
+    }
+    return render(request, 'superadmin/production/sendlist.html', context)
+
+
+
+def admin_pre_production_send(request, pk):
+    if request.user.is_authenticated and (request.user.role == 'ADMIN'):
+        product = Product.objects.get(id=pk)
+        form = AdminProductStockForm
+        spare = SpareStorage.objects.filter(
+            is_active="active").filter(spare__name__istartswith='salafan')
+        
+        if request.method == "POST":
+            form = AdminProductStockForm(data=request.POST)
+            
+            all_products = float(
+                request.POST['set_amount']) * float(request.POST['product_per_set'])
+            
+            labels = DesignLabel.objects.filter(design=product.design_type)
+            
+            labels_amount = []
+            
+            for l in labels:
+                if LabelStorage.objects.filter(label=l.label).aggregate(Sum('amount'))['amount__sum'] >= all_products:
+                    labels_amount.append(True)
+                    
+            if not all(labels_amount):
+                messages.error(
+                    request, 'Yetarli etiketika mavjud emas', extra_tags='danger')
+                return redirect('superuser:pre-production')
+                
+            
+            if form.is_valid() and all_products > 0:
+                
+                selected_spare = SpareStorage.objects.get(id=request.POST['spare'])
+                selected_design = Product.objects.get(id=pk)
+
+                if all_products > float(selected_design.amount):
+                    messages.error(
+                        request, 'Yetarli mahsulot mavjud emas', extra_tags='danger')
+                    return redirect('superuser:pre-production')
+
+                elif float(request.POST['set_amount']) > float(selected_spare.amount):
+                    messages.error(
+                        request, 'Yetarli salafan mavjud emas', extra_tags='danger')
+                    return redirect('superuser:pre-production')
+
+                else:
+                    with transaction.atomic():
+                        design = Design.objects.get(id=product.design_type.id)
+
+                        old_stock = ProductStock.objects.filter(design__id=design.id).filter(price=product.price).filter(
+                            price_type='uzs').filter(product_per_set=request.POST['product_per_set']).filter(
+                                confirmed_price=request.POST['confirmed_price']).filter(
+                                    is_active='active')
+                        
+                        if len(old_stock) > 0:
+                            old_one = old_stock.first()
+                            old_one.set_amount = float(
+                                old_one.set_amount) + float(request.POST['set_amount'])
+                            old_one.save()
+                        else:
+                            stock = form.save(commit=False)
+                            stock.design = product.design_type
+                            stock.price_type = 'uzs'
+                            stock.price = product.price
+                            stock.is_active = 'active'
+                            stock.save()
+                            
+                            
+                        for lb in labels:
+                            if all_products <=0:
+                                break
+                            
+                            lb_items = LabelStorage.objects.filter(label=lb.label)
+                            
+                            rm_amount = all_products
+                            
+                            for lb_item in lb_items:    
+                                a_to_sub = min(all_products, float(lb_item.amount))
+                                lb_item.amount = float(lb_item.amount) - a_to_sub
+                                lb_item.save()
+                                rm_amount = rm_amount - a_to_sub
+                                
+
+                            LabelStorageHistory.objects.create(
+                                executor=request.user,
+                                label=lb_item.label,
+                                action="export",
+                                amount=rm_amount,
+                                price=lb_item.price,
+                                price_type=lb_item.price_type,
+                                amount_type=lb_item.amount_type,
+                                where="yaim",
+                            )
+
+                        if float(selected_spare.amount) - float(request.POST['set_amount']) == 0:
+                            selected_spare.delete()
+                        elif float(selected_spare.amount) - float(request.POST['set_amount']):
+                            selected_spare.amount = float(
+                                selected_spare.amount) - float(request.POST['set_amount'])
+                            selected_spare.save()
+
+                        if float(selected_design.amount) - all_products == 0:
+                            selected_design.delete()
+                        elif float(selected_design.amount) - all_products > 0:
+                            selected_design.amount = float(
+                                selected_design.amount) - all_products
+                            selected_design.save()
+
+                        ProductStockHistory.objects.create(
+                            executor=request.user,
+                            action='import',
+                            item=design.name,
+                            amount=float(
+                                request.POST['product_per_set']) * float(request.POST['set_amount']),
+                            price=product.price,
+                            where='storage',
+                        )
+                        messages.success(
+                            request, "Mahsulot muvaffaqiyatli yuborildi.")
+                        return redirect('superuser:pre-production')
+            messages.error(request, "Formada xatolik bor.", extra_tags='danger')
+
+            return redirect('superuser:pre-production')
+        context = {
+            'menu': 'production_send',
+            'form': form,
+            'spares': spare,
+            'product': product
+        }
+
+        return render(request, 'superadmin/production/sendpp.html', context)
+    return redirect('base:login')

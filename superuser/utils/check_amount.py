@@ -195,7 +195,6 @@ def check_amount(fields, request):
 
 
                 if l_item.price == '' or l_item.price == 0 or l_item.price == '0' or l_item.price == None:
-                    print(l_item)
                     price += float(lb.last().price)
                 else:
                     price += float(l_item.price)

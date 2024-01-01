@@ -28,6 +28,7 @@ ACTION_TYPES = (
 WHERE = (
     ("null", "--------"),
     ("material", "Homashyo ombori"),
+    ("brak", "Brak mahsulot"),
     ("label", "Etiketika ombori"),
     ("production", "Ishlab chiqarish"),
     ("spare", "Ehtiyot qism ombori"),
@@ -719,3 +720,133 @@ class Finance(models.Model):
     
     updated_at = models.DateTimeField(auto_now_add=True)
     created_at = models.DateTimeField(auto_now=True)
+    
+    
+
+# PRE PRODUCTION
+class PreProduction(models.Model):
+    
+    spare = models.ForeignKey(
+        SpareStorage, on_delete=models.PROTECT, null=True, blank=True)
+    
+    material = models.ForeignKey(
+        MaterialStorage, on_delete=models.PROTECT, null=True, blank=True)
+    
+    label = models.ForeignKey(
+        LabelStorage, on_delete=models.PROTECT, null=True, blank=True)
+    
+    price = models.CharField(max_length=600, default=0)
+    price_type = models.CharField(
+        choices=CURRENCIES, default='usd', max_length=3)
+    
+    amount = models.IntegerField()
+    
+    is_active= models.BooleanField(default=True)
+
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class PreProductionHistory(models.Model):
+    executor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    production = models.ForeignKey(Production, on_delete=models.SET_NULL, null=True, blank=True)
+
+    action = models.CharField(choices=ACTION_TYPES, max_length=15)
+    amount = models.CharField(default="0", max_length=255)
+    amount_type = models.CharField(choices=AMOUNTS, max_length=5, default="point")
+    price = models.CharField(max_length=255, blank=True)
+    price_type = models.CharField(choices=CURRENCIES, default="uzs", max_length=5)
+    where = models.CharField(choices=WHERE, max_length=16, default="null")
+
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+
+class ProductStock(models.Model):
+    ACTIVE = (
+        ('active', 'Faol'),
+        ('inactive', 'Nofaol'),
+        ('deleted', 'O`chirilgan'),
+        ('pending', 'Kutilmoqda')
+    )
+    CURRENCIES = (
+        ('uzs', 'UZS'),
+        ('usd', 'USD'),
+    )
+
+    set_amount = models.IntegerField(max_length=255)
+    product_per_set = models.IntegerField(max_length=255)
+    price = models.CharField(max_length=255)
+    confirmed_price = models.CharField(max_length=255)
+    price_type = models.CharField(max_length=255, choices=CURRENCIES)
+    design = models.ForeignKey(Design, on_delete=models.PROTECT)
+    comment = models.CharField(max_length=255)
+
+    is_active = models.CharField(
+        choices=ACTIVE, default='pending', max_length=8)
+
+    def __str__(self) -> str:
+        return self.design.name
+
+
+class ProductStockHistory(models.Model):
+    executor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    item = models.CharField(max_length=255)
+
+    action = models.CharField(choices=ACTION_TYPES, max_length=15)
+    
+    amount = models.CharField(default="0", max_length=255)
+    amount_type = models.CharField(choices=AMOUNTS, max_length=5, default="point")
+    
+    price = models.CharField(max_length=255, blank=True)
+    price_type = models.CharField(choices=CURRENCIES, default="uzs", max_length=5)
+    
+    where = models.CharField(choices=WHERE, max_length=16, default="storage")
+
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+
+class ProductSales(models.Model):
+    card = models.ForeignKey('ProductSalesCard', on_delete=models.PROTECT)
+    product = models.ForeignKey(ProductStock, on_delete=models.PROTECT)
+    cost = models.CharField(max_length=255, default=0)
+    discount = models.CharField(max_length=255, default=0)
+    amount = models.CharField(max_length=255)
+    per_set = models.CharField(max_length=255)
+
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return self.product.design.name
+
+
+class ProductSalesCard(models.Model):
+    client = models.CharField(max_length=255)
+    card_id = models.CharField(max_length=1000)
+    cost = models.CharField(max_length=255, default=0)
+    given_cost = models.CharField(max_length=255, default=0)
+
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class ProductSalesHistory(models.Model):
+    STATUS_TYPES = (
+        ('start', 'Savdo boshlandi'),
+        ('process', 'Pul olindi'),
+        ('end', 'Qarz tugadi'),
+        ('complete', "Savdo yakunlandi")
+    )
+
+    card = models.ForeignKey(ProductSalesCard, on_delete=models.PROTECT)
+    taken_cost = models.CharField(max_length=255, default=0)
+    end_cost = models.CharField(max_length=255, default=0)
+
+    status = models.CharField(max_length=255, choices=STATUS_TYPES)
+
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)

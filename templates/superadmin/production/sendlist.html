@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+
+
+{% block choice %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" />
+{% endblock choice %}
+
+
+{% block sidebar_items %}
+{% include '../sidebar.html' %}
+{% endblock sidebar_items %}
+
+
+{% block content %}
+
+<div class="d-flex align-items-center gap-3">
+    <h3 class="">
+       Yarim tayyor mahsulot / Mahsulot turlari
+    </h3>
+    <!-- Modal Export -->
+    <div class="modal fade" id="exportProduction" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">2-sort brak mahsulot chiqarish
+                    </h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="type" value="export">
+                        <input type="hidden" name="brak" value="second">
+
+                        <div class="form-group mb-3">
+                            <label class="form-label">Dizayn turi*</label>
+                            <select name="design" class="form-control selectpicker" data-live-search="true" required>
+                                {% for design in designs %}
+                                <option value="{{ design.id}}">
+                                    {{ design.name }}
+                                </option>
+
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label class="form-label">Brak mahsulot hajmi (dona)</label>
+                            <input type="text" placeholder="Brak mahsulot hajmi" name="per_amount" class="form-control">
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label class="form-label">Brak mahsulot hajmi (gramm)</label>
+                            <input type="text" placeholder="Brak mahsulot hajmi" name="gr_amount" class="form-control">
+                        </div>
+
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Yopish</button>
+                        <button type="submit" class="btn btn-primary">Yuborish</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#exportProduction">
+        <i class="fa fa-arrow-up pr-3"></i>
+        2-sort
+    </button>
+
+
+
+    <div class="modal fade" id="exportThird" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">3-sort brak mahsulot chiqarish
+                    </h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="type" value="export">
+                        <input type="hidden" name="brak" value="third">
+
+                        <div class="form-group mb-3">
+                            <label class="form-label">Dizayn turi*</label>
+                            <select name="design" class="form-control selectpicker" data-live-search="true" required>
+                                {% for design in designs %}
+                                <option value="{{ design.id}}">
+                                    {{ design.name }}
+                                </option>
+
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label class="form-label">Brak mahsulot hajmi (gramm)</label>
+                            <input type="text" placeholder="Brak mahsulot hajmi" name="gr_amount" class="form-control">
+                        </div>
+
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Yopish</button>
+                        <button type="submit" class="btn btn-primary">Yuborish</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#exportThird">
+        <i class="fa fa-arrow-up pr-3"></i>
+        3-sort
+    </button>
+</div>
+
+<div class="card p-4 mt-3">
+    <div class="card-title">Mavjud mahsulotlar</div>
+    <table class="table mb-4" id="materialTable">
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Tannarx</th>
+                <th>Miqdor</th>
+                <th>
+                    Yuborish
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td>
+                    {{product}}
+                </td>
+                <td>
+                    {{product.price|intcomma}} so'm
+                </td>
+                <td>
+                    {{product.amount}}
+                </td>
+                <td>
+
+                    <a class="btn btn-sm btn-primary" href="{% url 'superuser:pre-production-send' product.pk %}">
+                        <i class="fa fa-eye pr-3"></i>
+                        Yuborish
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+
+    </table>
+    <div class="d-flex align-items-start gap-3">
+        <div class="form-group d-flex align-items-center gap-3">
+            <label>Uzunlik</label>
+            <select class="form-control" name="state" id="maxRows">
+                <option value="5000">Barchasini ko'rsatish</option>
+                <option value="5">5 ta</option>
+                <option value="10">10 ta</option>
+                <option value="15">15 ta</option>
+                <option value="20">20 ta</option>
+                <option value="50">50 ta</option>
+                <option value="70">70 ta</option>
+                <option value="100">100 ta</option>
+            </select>
+
+        </div>
+        <div class='pagination-container'>
+            <nav>
+                <ul class="pagination">
+                    <li class="page-item" data-page="prev">
+                        <span class="page-link">
+                            <i class="fa fa-chevron-left"></i> <span class="sr-only">(current)
+                            </span></span>
+                    </li>
+                    <li class="page-item" data-page="next" id="prev">
+                        <span class="page-link">
+                            <i class="fa fa-chevron-right"></i> <span class="sr-only">(current)
+                            </span></span>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+
+<script src="{% static 'assets/js/pagination.js'%}"></script>
+<script>
+    getPagination("table")
+</script>
+{% endblock content %}
+

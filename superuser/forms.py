@@ -10,6 +10,7 @@ from materials.models import (
     LabelType,
     MaterialStorage,
     MaterialType,
+    ProductStock,
     SpareStorage,
     SpareType,
     Worker,
@@ -196,3 +197,19 @@ class FinanceForm(forms.ModelForm):
         model = Finance
         fields = ('cost', 'price_type', 'comment', 'type',)
         
+        
+class AdminProductStockForm(forms.ModelForm):
+    class Meta:
+        model = ProductStock
+        fields = ['set_amount', 'product_per_set',
+                  'comment', 'confirmed_price']
+        labels = {
+            'set_amount': "Qop soni",
+            'product_per_set': 'Qopdagi mahsulot soni',
+            'confirmed_price': 'Tasdiqlangan narxi',
+            'comment': "Izoh"
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(AdminProductStockForm, self).__init__(*args, **kwargs)
+        self.visible_fields()[3].field.widget.attrs['class'] = 'mb-0'
