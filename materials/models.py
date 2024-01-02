@@ -106,14 +106,14 @@ class MaterialStorage(models.Model):
 
         if material.exists():
             m = material.first()
-            m.amount = int(m.amount) + int(request.POST.get("amount"))
+            m.amount = float(m.amount) + float(request.POST.get("amount"))
             m.import_comment = request.POST.get("import_comment")
             m.save()
 
         else:
             MaterialStorage.objects.create(
                 material=material_type,
-                amount=int(request.POST.get("amount")),
+                amount=float(request.POST.get("amount")),
                 amount_type=amount_type,
                 price=price,
                 confirmed_price=confirmed_price,
@@ -126,7 +126,7 @@ class MaterialStorage(models.Model):
             executor=request.user,
             material=material_type,
             action="import",
-            amount=int(request.POST.get("amount")),
+            amount=float(request.POST.get("amount")),
             price=price,
             price_type=price_type,
             amount_type=amount_type,
@@ -246,7 +246,7 @@ class SpareStorage(models.Model):
             executor=request.user,
             spare=spare_type,
             action="import",
-            amount=int(request.POST.get("amount")),
+            amount=float(request.POST.get("amount")),
             price=price,
             price_type=price_type,
             amount_type=amount_type,

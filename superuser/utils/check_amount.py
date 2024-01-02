@@ -72,28 +72,31 @@ def check_amount(fields, request):
             total_serio_type = d_field_qty + design_field_qty
             field_percent.append(total_serio_type)
 
-        
+        print(field_percent)
         for percent in range(len(field_percent)):
+            print(percent)
             checking_field = design.designfield_set.all()[percent]
             checking_materials = MaterialStorage.objects.filter(
-                material=checking_field.material_type).aggregate(Sum('amount'))['amount__sum']
+                material=checking_field.material_type).aggregate(Sum('amount'))['amount__sum'] or 0
+            checking_materials *= 1000
 
-            if checking_field.amount is not None and checking_materials is not None:
-                try:
-                    if float(field_percent[percent]) <= float(checking_materials):
-                        states.append(True)
-                    else:
+            if int(checking_field.amount) != 0:
+                if checking_materials is not None:
+                    try:
+                        if float(field_percent[percent]) <= float(checking_materials):
+                            states.append(True)
+                        else:
+                            states.append(False)
+                            errors.append(
+                                {'field_id': product['field_id'], 'msg': f"{design.name} uchun yetarli {checking_field.material_type} mavjud emas"})
+                    except ValueError:
                         states.append(False)
                         errors.append(
                             {'field_id': product['field_id'], 'msg': f"{design.name} uchun yetarli {checking_field.material_type} mavjud emas"})
-                except ValueError:
+                else:
                     states.append(False)
                     errors.append(
                         {'field_id': product['field_id'], 'msg': f"{design.name} uchun yetarli {checking_field.material_type} mavjud emas"})
-            else:
-                states.append(False)
-                errors.append(
-                    {'field_id': product['field_id'], 'msg': f"{design.name} uchun yetarli {checking_field.material_type} mavjud emas"})
 
         for l in design.designlabel_set.all():
             label = LabelStorage.objects.filter(label__pk=l.label.id, is_active='active').aggregate(Sum('amount'))['amount__sum']
@@ -114,21 +117,22 @@ def check_amount(fields, request):
             field_range = 0
             for get_field in design.designfield_set.all():
                 mat_price = 0
-                materials = MaterialStorage.objects.filter(material=get_field.material_type, is_active='active')
+                materials = MaterialStorage.objects.filter(material=get_field.material_type, is_active='active', amount__gt=0)
                 remaining_amount = float(field_percent[field_range])
                 for material in materials:
+                    material_amount = float(material.amount) * 1000
                     mat_price = float(material.confirmed_price)
                     mats_price = float(material.price)
                     
                     if remaining_amount <= 0:
                         break
-                    amount_to_subtract = min(remaining_amount, float(material.amount))
-                    material.amount = float(material.amount) - amount_to_subtract
+                    amount_to_subtract = min(remaining_amount, float(material_amount))
+                    material.amount = (float(material_amount) - amount_to_subtract) / 1000
                     material.save()
+                    
                     remaining_amount = remaining_amount - amount_to_subtract
                     
-                    if float(material.amount) == 0:
-                        material.delete()
+                    
                         
                     ProductionMaterialStorageHistory.objects.create(
                         executor=request.user,
@@ -186,7 +190,7 @@ def check_amount(fields, request):
                         executor=request.user,
                         label=lb_item.label,
                         action="export",
-                        amount=rm_amount,
+                        amount=a_to_sub,
                         price=price,
                         price_type=lb_item.price_type,
                         amount_type=lb_item.amount_type,
@@ -236,19 +240,25 @@ def check_amount(fields, request):
             current_year = datetime.now().year
 
             worker_profile=Worker.objects.get(id=product['worker_id'])
-            worker = WorkerAccount.objects.filter(worker__id=product['worker_id']).filter(created_at__month=current_month, created_at__year=current_year)
+            print('worker found', worker_profile)
+            
+            worker = WorkerAccount.objects.filter(worker__id=product['worker_id']).filter(created_at__month=current_month, created_at__year=current_year, completed=False)
+            print('worker account found', len(worker))
+            
             worker_works = WorkerWork.objects.create(
                 amount=product['amount'],
                 cost=product['cost'],
-                comment=''
+                comment='Ishlab chiqarish'
             )
+            print('Worker works created')
             
             if len(worker)> 0:
-                worker = worker.first()
+                worker = worker.last()
                 
                 worker.workerworks_cost = float(worker.workerworks_cost) + float(product['amount']) * float(product['cost'])
                 worker.workerworks_history.add(worker_works)
                 worker.save()
+                print("Old account saved")
             else:
                 new_worker_account = WorkerAccount.objects.create(
                     worker=worker_profile,
@@ -257,6 +267,7 @@ def check_amount(fields, request):
                 )
                 new_worker_account.workerworks_history.add(worker_works)
                 new_worker_account.save()
+                print("new account was created")
 
             sucess.append(
                 {'field_id': product['field_id'], 'msg': f'{worker_profile.name}ga kiritildi', 'input': 'worker'})
