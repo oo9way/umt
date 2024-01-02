@@ -28,6 +28,8 @@ from superuser.views import (
     SpareHistoryListView,
     SpareExportView,
     DesignDeleteView,
+    StockBarcodeView,
+    StockView,
     UserView,
     WorkerListCreateView,
     admin_account_details,
@@ -206,6 +208,15 @@ urlpatterns +=[
     path('dashboard/workers/history/', admin_accounts_history, name='accounts-history'),
     path('dashboard/workers/stats/', admin_worker_stats, name='register-workers-stats'),
 ]
+
+
+# STOCK
+
+urlpatterns +=[
+    path("dashboard/stock/", StockView.as_view(), name="stock"),
+    path("dashboard/stock/barcodes/", StockBarcodeView.as_view(), name="stock-barcodes"),
+]
+
 
 
 # EXCEL GENERATORS

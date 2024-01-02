@@ -1,5 +1,14 @@
 from django.db import models
 from user.models import User
+import random
+from barcode import Code128
+from barcode.writer import ImageWriter
+
+
+def generate_unique_id():
+    # Generate a random 10 digit ID
+    return str(random.randint(1000000, 9999999))
+
 
 AMOUNTS = (
     ("gram", "Gramm"),
@@ -81,7 +90,7 @@ class MaterialStorage(models.Model):
 
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    
+
     def __str__(self):
         return f"{self.material} - {self.amount} {self.get_amount_type_display()}"
 
@@ -473,19 +482,17 @@ class Exchange(models.Model):
 
     def __str__(self) -> str:
         return self.usd_currency
-    
-    
-    
+
+
 # PRODUCTION
 class ProductionMaterialStorage(models.Model):
     material = models.ForeignKey(
-        MaterialStorage, on_delete=models.PROTECT, null=True, blank=True)
+        MaterialStorage, on_delete=models.PROTECT, null=True, blank=True
+    )
     price = models.CharField(max_length=600, default=0)
-    price_type = models.CharField(
-        choices=CURRENCIES, default='usd', max_length=3)
+    price_type = models.CharField(choices=CURRENCIES, default="usd", max_length=3)
     amount = models.CharField(max_length=255)
-    is_active = models.CharField(
-        choices=ACTIVE, default='pending', max_length=8)
+    is_active = models.CharField(choices=ACTIVE, default="pending", max_length=8)
 
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -493,8 +500,12 @@ class ProductionMaterialStorage(models.Model):
 
 class ProductionMaterialStorageHistory(models.Model):
     executor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    production_material = models.ForeignKey(MaterialType, on_delete=models.SET_NULL, null=True)
-    production_label = models.ForeignKey(LabelType, on_delete=models.SET_NULL, null=True)
+    production_material = models.ForeignKey(
+        MaterialType, on_delete=models.SET_NULL, null=True
+    )
+    production_label = models.ForeignKey(
+        LabelType, on_delete=models.SET_NULL, null=True
+    )
     action = models.CharField(choices=ACTION_TYPES, max_length=9)
     amount = models.CharField(default="0", max_length=255)
     amount_type = models.CharField(choices=AMOUNTS, max_length=5, default="point")
@@ -508,11 +519,10 @@ class ProductionMaterialStorageHistory(models.Model):
 
 class Production(models.Model):
     design_type = models.ForeignKey(Design, on_delete=models.PROTECT)
-    amount = models.CharField(max_length=255, default='0')
+    amount = models.CharField(max_length=255, default="0")
     price = models.CharField(max_length=255)
     comment = models.CharField(max_length=255, default="Izoh qoldiring")
-    is_active = models.CharField(
-        choices=ACTIVE, default='pending', max_length=8)
+    is_active = models.CharField(choices=ACTIVE, default="pending", max_length=8)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -520,7 +530,6 @@ class Production(models.Model):
 
 
 class ProductionHistory(models.Model):
-
     executor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     production = models.ForeignKey(Design, on_delete=models.SET_NULL, null=True)
 
@@ -536,18 +545,11 @@ class ProductionHistory(models.Model):
 
 
 class Brak(models.Model):
-    SORT_TYPES = (
-        ('second', 'Ikkinchi sort'),
-        ('third', 'Uchinchi sort')
-    )
+    SORT_TYPES = (("second", "Ikkinchi sort"), ("third", "Uchinchi sort"))
 
-    STATUS_TYPES = (
-        ('active', "Faol"),
-        ('sold', "Sotilgan")
-    )
+    STATUS_TYPES = (("active", "Faol"), ("sold", "Sotilgan"))
 
-    design = models.ForeignKey(
-        Design, on_delete=models.PROTECT, null=True, blank=True)
+    design = models.ForeignKey(Design, on_delete=models.PROTECT, null=True, blank=True)
 
     gr_amount = models.CharField(max_length=255, default=0)
     per_amount = models.CharField(max_length=255, default=0)
@@ -566,7 +568,7 @@ class ProductionWorkerBalance(models.Model):
     worker = models.ForeignKey(ProductionWorker, on_delete=models.PROTECT)
     date = models.DateTimeField(auto_now_add=True)
     amount = models.CharField(max_length=255)
-    
+
 
 class Expenditure(models.Model):
     executor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
@@ -575,9 +577,8 @@ class Expenditure(models.Model):
 
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    
-    
-    
+
+
 class WorkerCredit(models.Model):
     amount = models.CharField(max_length=255)
     comment = models.CharField(max_length=255, null=True, blank=True)
@@ -607,29 +608,24 @@ class WorkerWork(models.Model):
     cost = models.CharField(max_length=255, default=0)
     comment = models.CharField(max_length=255, null=True, blank=True)
 
-
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
 class Worker(models.Model):
-    SALARY_TYPES = (
-        ('daily', 'Donabay'),
-        ('monthly', 'Oylik'),
-        ('per_way', 'Aravabay')
-    )
+    SALARY_TYPES = (("daily", "Donabay"), ("monthly", "Oylik"), ("per_way", "Aravabay"))
 
     JOB_TYPES = (
-        ('administration', 'Mamuriyat'),
-        ('master', 'Usta'),
-        ('tailor', 'Tikuvchi'),
-        ('rosso_tailor', 'Rosso tikuvchisi'),
-        ('turner', 'Ag`daruvchi'),
-        ('moulder', 'Qolipchi'),
-        ('charioteer', 'Arava yechuvchi'),
-        ('taster', 'Tahlovchi'),
-        ('label_setter', 'Etiketika uruvchi'),
-        ('packer', 'Qadoqchi'),
+        ("administration", "Mamuriyat"),
+        ("master", "Usta"),
+        ("tailor", "Tikuvchi"),
+        ("rosso_tailor", "Rosso tikuvchisi"),
+        ("turner", "Ag`daruvchi"),
+        ("moulder", "Qolipchi"),
+        ("charioteer", "Arava yechuvchi"),
+        ("taster", "Tahlovchi"),
+        ("label_setter", "Etiketika uruvchi"),
+        ("packer", "Qadoqchi"),
     )
 
     name = models.CharField(max_length=255)
@@ -650,8 +646,7 @@ class WorkerAccount(models.Model):
     worker = models.ForeignKey(Worker, on_delete=models.PROTECT)
 
     credits = models.CharField(max_length=255, default=0)
-    credits_history = models.ManyToManyField(
-        WorkerCredit, null=True, blank=True)
+    credits_history = models.ManyToManyField(WorkerCredit, null=True, blank=True)
 
     debits = models.CharField(max_length=255, default=0)
     debits_history = models.ManyToManyField(WorkerDebit, null=True, blank=True)
@@ -660,26 +655,20 @@ class WorkerAccount(models.Model):
     fines_history = models.ManyToManyField(WorkerFine, null=True, blank=True)
 
     workerworks_cost = models.CharField(max_length=255, default=0)
-    workerworks_history = models.ManyToManyField(
-        WorkerWork, null=True, blank=True)
-    
+    workerworks_history = models.ManyToManyField(WorkerWork, null=True, blank=True)
+
     completed = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
-    
-    
+
+
 class Product(models.Model):
-    ACTIVE = (
-        ('active', 'Faol'),
-        ('inactive', 'Nofaol'),
-        ('pending', 'Kutilmoqda')
-    )
+    ACTIVE = (("active", "Faol"), ("inactive", "Nofaol"), ("pending", "Kutilmoqda"))
     design_type = models.ForeignKey(Design, on_delete=models.PROTECT)
-    amount = models.CharField(max_length=255, default='0')
+    amount = models.CharField(max_length=255, default="0")
     price = models.CharField(max_length=255)
     comment = models.CharField(max_length=255, default="Izoh qoldiring")
-    is_active = models.CharField(
-        choices=ACTIVE, default='pending', max_length=8)
+    is_active = models.CharField(choices=ACTIVE, default="pending", max_length=8)
     date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -688,60 +677,66 @@ class Product(models.Model):
 
 class ProductHistory(models.Model):
     executor = models.ForeignKey(
-        User, on_delete=models.SET_DEFAULT, default="O'chirilgan foydalanuvchi")
+        User, on_delete=models.SET_DEFAULT, default="O'chirilgan foydalanuvchi"
+    )
     action = models.CharField(choices=ACTION_TYPES, max_length=7)
     details = models.JSONField()
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
-
-
 class Finance(models.Model):
     FINANCE_TYPES = (
-        ('credit', "Chiqim"),
-        ('debit', "Kirim"),
+        ("credit", "Chiqim"),
+        ("debit", "Kirim"),
     )
-    
+
     FROM_WHERE = (
-        ('sales',"Savdo"),
-        ('loan', "Qarz"),
-        ('personal', "Shaxsiy mablag'"),
+        ("sales", "Savdo"),
+        ("loan", "Qarz"),
+        ("personal", "Shaxsiy mablag'"),
     )
-    
+
     executor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    
-    cost = models.CharField(max_length=255, default='0', verbose_name='Summa')
-    price_type = models.CharField(choices=CURRENCIES, default="uzs", max_length=5, verbose_name='Pul birligi')
-    
-    comment = models.CharField(max_length=255, verbose_name='Izoh')
-    
-    type = models.CharField(max_length=16, choices=FINANCE_TYPES, default="credit", verbose_name="Kirim / Chiqim")
-    
+
+    cost = models.CharField(max_length=255, default="0", verbose_name="Summa")
+    price_type = models.CharField(
+        choices=CURRENCIES, default="uzs", max_length=5, verbose_name="Pul birligi"
+    )
+
+    comment = models.CharField(max_length=255, verbose_name="Izoh")
+
+    type = models.CharField(
+        max_length=16,
+        choices=FINANCE_TYPES,
+        default="credit",
+        verbose_name="Kirim / Chiqim",
+    )
+
     updated_at = models.DateTimeField(auto_now_add=True)
     created_at = models.DateTimeField(auto_now=True)
-    
-    
+
 
 # PRE PRODUCTION
 class PreProduction(models.Model):
-    
     spare = models.ForeignKey(
-        SpareStorage, on_delete=models.PROTECT, null=True, blank=True)
-    
+        SpareStorage, on_delete=models.PROTECT, null=True, blank=True
+    )
+
     material = models.ForeignKey(
-        MaterialStorage, on_delete=models.PROTECT, null=True, blank=True)
-    
+        MaterialStorage, on_delete=models.PROTECT, null=True, blank=True
+    )
+
     label = models.ForeignKey(
-        LabelStorage, on_delete=models.PROTECT, null=True, blank=True)
-    
+        LabelStorage, on_delete=models.PROTECT, null=True, blank=True
+    )
+
     price = models.CharField(max_length=600, default=0)
-    price_type = models.CharField(
-        choices=CURRENCIES, default='usd', max_length=3)
-    
+    price_type = models.CharField(choices=CURRENCIES, default="usd", max_length=3)
+
     amount = models.IntegerField()
-    
-    is_active= models.BooleanField(default=True)
+
+    is_active = models.BooleanField(default=True)
 
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -749,7 +744,9 @@ class PreProduction(models.Model):
 
 class PreProductionHistory(models.Model):
     executor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    production = models.ForeignKey(Production, on_delete=models.SET_NULL, null=True, blank=True)
+    production = models.ForeignKey(
+        Production, on_delete=models.SET_NULL, null=True, blank=True
+    )
 
     action = models.CharField(choices=ACTION_TYPES, max_length=15)
     amount = models.CharField(default="0", max_length=255)
@@ -762,29 +759,53 @@ class PreProductionHistory(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
-
 class ProductStock(models.Model):
     ACTIVE = (
-        ('active', 'Faol'),
-        ('inactive', 'Nofaol'),
-        ('deleted', 'O`chirilgan'),
-        ('pending', 'Kutilmoqda')
+        ("active", "Faol"),
+        ("inactive", "Nofaol"),
+        ("deleted", "O`chirilgan"),
+        ("pending", "Kutilmoqda"),
     )
     CURRENCIES = (
-        ('uzs', 'UZS'),
-        ('usd', 'USD'),
+        ("uzs", "UZS"),
+        ("usd", "USD"),
     )
 
     set_amount = models.IntegerField(max_length=255)
     product_per_set = models.IntegerField(max_length=255)
+    
     price = models.CharField(max_length=255)
     confirmed_price = models.CharField(max_length=255)
     price_type = models.CharField(max_length=255, choices=CURRENCIES)
+    
     design = models.ForeignKey(Design, on_delete=models.PROTECT)
+    
     comment = models.CharField(max_length=255)
 
-    is_active = models.CharField(
-        choices=ACTIVE, default='pending', max_length=8)
+    
+    is_active = models.CharField(choices=ACTIVE, default="pending", max_length=8)
+    
+    
+    barcode = models.CharField(max_length=255, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.barcode:
+            # Generate a unique ID for the barcode
+            barcode_id = generate_unique_id()
+
+            # Generate the barcode as a Code128 code
+            code = Code128(barcode_id, writer=ImageWriter())
+
+            # Save the barcode as a PNG image
+            filename = f"media/barcodes/{barcode_id}"
+            code.save(filename)
+
+            # Save the barcode filename to the database
+            self.barcode = filename
+        
+        super(ProductStock, self).save(*args, **kwargs)
+
+    
 
     def __str__(self) -> str:
         return self.design.name
@@ -795,22 +816,21 @@ class ProductStockHistory(models.Model):
     item = models.CharField(max_length=255)
 
     action = models.CharField(choices=ACTION_TYPES, max_length=15)
-    
+
     amount = models.CharField(default="0", max_length=255)
     amount_type = models.CharField(choices=AMOUNTS, max_length=5, default="point")
-    
+
     price = models.CharField(max_length=255, blank=True)
     price_type = models.CharField(choices=CURRENCIES, default="uzs", max_length=5)
-    
+
     where = models.CharField(choices=WHERE, max_length=16, default="storage")
 
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
-
 class ProductSales(models.Model):
-    card = models.ForeignKey('ProductSalesCard', on_delete=models.PROTECT)
+    card = models.ForeignKey("ProductSalesCard", on_delete=models.PROTECT)
     product = models.ForeignKey(ProductStock, on_delete=models.PROTECT)
     cost = models.CharField(max_length=255, default=0)
     discount = models.CharField(max_length=255, default=0)
@@ -836,10 +856,10 @@ class ProductSalesCard(models.Model):
 
 class ProductSalesHistory(models.Model):
     STATUS_TYPES = (
-        ('start', 'Savdo boshlandi'),
-        ('process', 'Pul olindi'),
-        ('end', 'Qarz tugadi'),
-        ('complete', "Savdo yakunlandi")
+        ("start", "Savdo boshlandi"),
+        ("process", "Pul olindi"),
+        ("end", "Qarz tugadi"),
+        ("complete", "Savdo yakunlandi"),
     )
 
     card = models.ForeignKey(ProductSalesCard, on_delete=models.PROTECT)

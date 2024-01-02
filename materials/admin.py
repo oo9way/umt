@@ -5,5 +5,5 @@ from materials.models import *
 admin.site.register([MaterialStorage, MaterialType, MaterialStorageHistory])
 admin.site.register([SpareStorage, SpareType, SpareStorageHistory])
 admin.site.register([LabelStorage, LabelType, LabelStorageHistory])
-admin.site.register([Exchange, Design, DesignField, DesignImmutable, DesignLabel])
+admin.site.register([Exchange, Design, DesignField, DesignImmutable, DesignLabel, ProductStock])
 admin.site.register([ProductionMaterialStorage, Brak, Worker, Product, WorkerAccount, WorkerWork])

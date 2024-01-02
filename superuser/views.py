@@ -1475,3 +1475,17 @@ def admin_pre_production_send(request, pk):
 
         return render(request, 'superadmin/production/sendpp.html', context)
     return redirect('base:login')
+
+
+
+class StockView(IsAdminRole, ListView):
+    model = ProductStock
+    paginate_by = 20
+    ordering = ["-id"]
+    template_name = "superadmin/stock/list_create.html"
+
+
+
+class StockBarcodeView(IsAdminRole, ListView):
+    model = ProductStock
+    template_name = "superadmin/stock/barcodes.html"
