@@ -22,6 +22,7 @@ from materials.models import (
     DesignField,
     DesignImmutable,
     DesignLabel,
+    DesignPriceHistory,
     Finance,
     MaterialStorage,
     MaterialStorageHistory,
@@ -1684,3 +1685,45 @@ def sales_history(request):
         'query': query.order_by('-created_at')
     }
     return render(request, 'superadmin/stock/history.html', context)
+
+
+
+
+class DesignPriceHistoryView(IsAdminRole, ListView):
+    model = DesignPriceHistory
+    paginate_by = 20
+    ordering = ["-created_at"]
+    template_name = "superadmin/design/history.html"
+
+    def get_queryset(self):
+        date_from = self.request.GET.get("date_from")
+        date_to = self.request.GET.get("date_to")
+        name = self.request.GET.get("name")
+        queryset = super().get_queryset()
+        
+        if date_from:
+            queryset = queryset.filter(created_at__gte=date_from)
+
+        if date_to:
+            queryset = queryset.filter(created_at__lte=date_to)
+            
+        if name:
+            queryset = queryset.filter(design_name__icontains=name)
+
+        return queryset
+    
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        date_from = self.request.GET.get("date_from")
+        date_to = self.request.GET.get("date_to")
+        name = self.request.GET.get("name")
+        
+        context['name'] = name
+        context['date_from'] = date_from
+        context['date_to'] = date_to
+        
+        
+        return context
+    

@@ -144,6 +144,25 @@ class DesignModelResource(resources.ModelResource):
         exclude = "id"
         
         
+class DesignPriceHistoryModelResource(resources.ModelResource):
+    design_name = fields.Field(column_name="Dizayn nomi", attribute="design_name")
+    weight = fields.Field(column_name="Og'irlik", attribute="weight")
+    exchange = fields.Field(column_name="Kurs narxi", attribute="exchange")
+    materials = fields.Field(column_name="Homashyo narxi", attribute="materials")
+    expense = fields.Field(column_name="Harajatlar", attribute="expense")
+    building = fields.Field(column_name="Bino amortizatsiya", attribute="building")
+    machine = fields.Field(column_name="Stanok amortizatsiya", attribute="machine")
+    invalid = fields.Field(column_name="Brak", attribute="invalid")
+    another_percent = fields.Field(column_name="Boshqa", attribute="another_percent")
+    total = fields.Field(column_name="Umumiy", attribute="total")
+    
+    created_at = fields.Field(column_name="Dastlabki qo'shish", attribute="created_at")
+
+    class Meta:
+        model = Design
+        exclude = "id"
+        
+        
 class ExpenditureModelResource(resources.ModelResource):
     executor = fields.Field(column_name="Bajaruvchi", attribute="executor")
     comment = fields.Field(column_name="Izoh", attribute="comment")

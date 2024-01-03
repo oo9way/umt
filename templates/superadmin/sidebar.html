@@ -67,8 +67,14 @@
 
 
 <div class="sidebar-dropdown p-3 border-bottom dropdown">
-    <a href="{% url 'superuser:design_home' %}" class="nav-link">Dizaynlar</a>
+    <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true"
+        aria-expanded="false">Dizaynlar</a>
+    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+        <a class="dropdown-item" href="{% url 'superuser:design_home' %}" class="nav-link">Dizaynlar</a>
+        <a class="dropdown-item" href="{% url 'superuser:design_price_history' %}" class="nav-link">Narxlar tarixi</a>
+    </div>
 </div>
+
 
 <div class="sidebar-dropdown p-3 border-bottom dropdown">
     <a href="{% url 'superuser:brak_list' %}" class="nav-link">Brak mahsulotlar</a>

@@ -2,6 +2,7 @@ from django.urls import path
 from superuser.forms import SellBrak
 from superuser.views import (
     BrakListView,
+    DesignPriceHistoryView,
     DesignView,
     ExpenditureView,
     FinanceView,
@@ -168,6 +169,8 @@ urlpatterns += [
         name="design-details",
     ),
     path("dashboard/design/delete/<int:pk>/", DesignDeleteView.as_view(), name="design_delete"),
+    path("dashboard/design/price/history/", DesignPriceHistoryView.as_view(), name="design_price_history"),
+    
     
 ]
 
@@ -278,6 +281,14 @@ urlpatterns += [
         GenerateFinanceExcel.as_view(),
         name="finance_xls",
     ),
+    
+    path(
+        "dashboard/design/history/generate-xls/",
+        GenerateDesignPriceHistoryExcel.as_view(),
+        name="design_price_history_xls",
+    ),
+    
+    
 ]
 
 

@@ -100,6 +100,37 @@ class GenerateDesignExcel(IsAdminRole, View):
 
 
 
+class GenerateDesignPriceHistoryExcel(IsAdminRole, View):
+    def get(self, request, *args, **kwargs):
+        queryset = DesignPriceHistory.objects.all().order_by("-id")
+        
+
+        date_from = self.request.GET.get("date_from")
+        date_to = self.request.GET.get("date_to")
+        name = self.request.GET.get("name")
+    
+        
+        if date_from:
+            queryset = queryset.filter(created_at__gte=date_from)
+
+        if date_to:
+            queryset = queryset.filter(created_at__lte=date_to)
+            
+        if name:
+            queryset = queryset.filter(design_name__icontains=name)
+    
+
+        dataset = DesignPriceHistoryModelResource().export(
+            queryset
+        )
+        
+        
+        response = HttpResponse(dataset.xls, content_type="application/vnd.ms-excel")
+        response["Content-Disposition"] = 'attachment; filename="Dizaynlar narxlar tarixi.xlsx"'
+        return response
+
+
+
 class GenerateExpenditureExcel(IsAdminRole, View):
     def get(self, request, *args, **kwargs):
         queryset = Expenditure.objects.all().order_by("-id")
