@@ -433,7 +433,16 @@ class Design(models.Model):
     amount = models.CharField(max_length=255, default=1)
     sex = models.CharField(max_length=10, choices=SEX_TYPE)
     season = models.CharField(max_length=6, choices=SEASON_TYPE)
-
+    
+    weight = models.CharField(max_length=16, default=0)
+    labels = models.CharField(max_length=16, default=0)
+    expense = models.CharField(max_length=16, default=0)
+    building = models.CharField(max_length=16, default=0)
+    machine = models.CharField(max_length=16, default=0)
+    invalid = models.CharField(max_length=16, default=0)
+    another_percent = models.CharField(max_length=16, default=0)
+    total = models.CharField(max_length=16, default=0)
+    
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -871,5 +880,22 @@ class ProductSalesHistory(models.Model):
 
     status = models.CharField(max_length=255, choices=STATUS_TYPES)
 
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+
+class DesignPriceHistory(models.Model):
+    design_name = models.CharField(max_length=255)
+    weight = models.CharField(max_length=16, default="0")
+    exchange = models.CharField(max_length=16, default="0")
+    labels = models.CharField(max_length=16, default="0")
+    expense = models.CharField(max_length=16, default="0")
+    building = models.CharField(max_length=16, default="0")
+    machine = models.CharField(max_length=16, default="0")
+    invalid = models.CharField(max_length=16, default="0")
+    another_percent = models.CharField(max_length=16, default="0")
+    total = models.CharField(max_length=16, default="0")
+    
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)

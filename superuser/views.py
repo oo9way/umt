@@ -53,7 +53,7 @@ from materials.models import (
     WorkerDebit,
     WorkerFine
 )
-from superuser.utils.check_amount import check_amount, insert_worker_stats
+from superuser.utils.check_amount import check_amount, create_price, insert_worker_stats
 from user.models import User
 
 from django.db import transaction
@@ -659,6 +659,8 @@ def admin_edit_design_materials(request, pk):
             get_addition.calc_type = addition_calc_type
             get_addition.cost = addition_amount
             get_addition.save()
+            
+            create_price(design)
 
             messages.success(request, "Dizayn muvaffaqiyatli kiritildi")
         else:

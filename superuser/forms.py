@@ -95,11 +95,9 @@ class InsertLabelTypeForm(forms.ModelForm):
 class AdminDesign(forms.ModelForm):
     class Meta:
         model = Design
-        fields = "__all__"
+        fields = ("name", "amount", "sex", "season",)
         labels = {
             "name": "Nomi",
-            "materials": "Material turi",
-            "label": "Etiketika turi",
             "amount": "Juft miqdori",
             "sex": "Jinsi",
             "season": "Mavsumi",
