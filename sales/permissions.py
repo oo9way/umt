@@ -1,6 +1,6 @@
 from django.contrib.auth.mixins import UserPassesTestMixin
 
 
-class IsAdminRole(UserPassesTestMixin):
+class IsSalerRole(UserPassesTestMixin):
     def test_func(self):
         return self.request.user.is_authenticated and self.request.user.role == "SALES"

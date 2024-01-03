@@ -101,6 +101,9 @@ class MaterialStorage(models.Model):
         confirmed_price = request.POST.get("confirmed_price")
         price_type = request.POST.get("price_type")
         amount_type = request.POST.get("amount_type")
+        
+        is_active = "active" if request.user.role == "ADMIN" else "pending"
+        print(is_active)
 
         material_type = MaterialType.objects.get(id=material_type_id)
 
@@ -110,7 +113,7 @@ class MaterialStorage(models.Model):
             confirmed_price=confirmed_price,
             price_type=price_type,
             amount_type=amount_type,
-            is_active="active",
+            is_active=is_active,
         )
 
         if material.exists():
@@ -128,7 +131,7 @@ class MaterialStorage(models.Model):
                 confirmed_price=confirmed_price,
                 price_type=price_type,
                 import_comment=request.POST.get("import_comment"),
-                is_active="active",
+                is_active=is_active,
             )
 
         MaterialStorageHistory.objects.create(

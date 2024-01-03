@@ -1,4 +1,6 @@
+
 {% block sidebar_items %}
+{% if request.user.role == "ADMIN" %}
 <div class="sidebar-dropdown p-3 border-bottom dropdown">
     <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true"
         aria-expanded="false">Homashyo ombori</a>
@@ -96,4 +98,51 @@
 </div>
 
 
+{% endif %}
+
+
+
+{% if request.user.role == "MATERIAL" %}
+
+<div class="sidebar-dropdown p-3 border-bottom dropdown">
+    <a href="{% url 'materials:dashboard' %}" class="nav-link">Homashyo ombori</a>
+</div>
+<div class="sidebar-dropdown p-3 border-bottom dropdown">
+<a href="{% url 'materials:inactives' %}" class="nav-link">Tasdiqlanmagan homashyolar</a>
+</div>
+
+<div class="sidebar-dropdown p-3 border-bottom dropdown">
+    <a href="{% url 'materials:history' %}" class="nav-link">Tarix</a>
+</div>
+
+    
+{% endif %}
+    
+
+
+{% if request.user.role == "SALES" %}
+<div class="sidebar-dropdown p-3 border-bottom dropdown">
+    <a href="{% url 'sales:dashboard' %}" class="nav-link">Tayyor mahsulotlar ombori</a>
+</div>
+
+<div class="sidebar-dropdown p-3 border-bottom dropdown">
+    <a class="dropdown-item" href="{% url 'sales:stock-sell' %}">Mijozga sotish</a>
+</div>
+
+<div class="sidebar-dropdown p-3 border-bottom dropdown">
+    <a class="dropdown-item" href="{% url 'sales:sales' %}">Savdolar</a>
+</div>
+
+<div class="sidebar-dropdown p-3 border-bottom dropdown">
+    <a class="dropdown-item" href="{% url 'superuser:sales-history' %}">Savdo tarixi</a>
+</div>
+{% endif %}
+    
+
+
+
+<div class="sidebar-dropdown p-3 border-bottom dropdown">
+    <a href="{% url 'users:logout' %}" class="nav-link">Chiqish</a>
+</div>
 {% endblock sidebar_items %}
+    

@@ -144,6 +144,7 @@ class MaterialHistoryListView(IsAdminRole, ListView):
     template_name = "superadmin/materialhistory.html"
     paginate_by = 20
     ordering = ["-updated_at"]
+    
 
 
 class MaterialInActivesListView(IsAdminRole, ListView):
@@ -1662,6 +1663,9 @@ def sales_history(request):
     query = ProductSalesHistory.objects.all()
     date_from = request.GET.get('start')
     date_to = request.GET.get('end')
+    
+    if not request.user.is_authenticated and request.user.role != "ADMIN":
+        return redirect(reverse('users:login'))
     
     if date_from:
         query = ProductSalesHistory.objects.filter(created_at__gte=date_from)

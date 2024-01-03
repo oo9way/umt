@@ -11,38 +11,10 @@
 
 {% block content %}
 
-<div class="d-flex align-items-center gap-3">
-    <h1 class="">
+    <h3 class="">
         Mahsulot sotish
-    </h1>
+    </h3>
 
-    <!-- Modal Export -->
-    <div class="modal fade" id="exportProduction" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">Ishlab chiqarishga eksport
-                    </h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form method="post">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="client_add" />
-                        {{client_form|crispy}}
-                        <button type="submit" class="btn btn-primary">Saqlash</button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Yopish</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#exportProduction">
-        <i class="fa fa-plus pr-3"></i>
-        * Mijoz kiritish
-    </button>
-</div>
 
 <div class="card p-4 mt-3" id="price_list">
     <div class="card-title">Tanlangan mahsulotlar</div>

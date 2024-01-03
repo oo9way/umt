@@ -23,6 +23,8 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("auth/", include("user.urls", namespace="users")),
     path("superuser/", include("superuser.urls", namespace="superuser")),
+    path("material/", include("materials.urls", namespace="materials")),
+    path("sales/", include("sales.urls", namespace="sales")),
 ]
 
 if settings.DEBUG:

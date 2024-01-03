@@ -9,7 +9,7 @@
 
 {% block content %}
 
-<h3 class="mt-2">Homashyo</h3>
+<h3 class="mt-2">Tasdiqlanmagan homashyolar</h3>
 <hr>
 
 <br>
@@ -25,8 +25,12 @@
                 <th>Tasdiqlangan narxi</th>
                 <th>Holati</th>
                 <th>Izoh</th>
+                
+                {% if request.user.role == "ADMIN" %}
                 <th>Tasdiqlash</th>
                 <th>Bekor qilish</th>
+                {% endif %}
+                    
             </tr>
         </thead>
         <tbody>
@@ -39,6 +43,8 @@
                 <td>{{obj.confirmed_price|intcomma}} {{obj.get_price_type_display}}</td>
                 <td>{{obj.get_is_active_display}}</td>
                 <td>{{obj.import_comment}}</td>
+                
+                {% if request.user.role == "ADMIN" %}
                 <td>
                     <a href="{% url 'superuser:material_inactives_confirm' obj.pk %}" class="btn btn-outline-success">
                         Tasdiqlash
@@ -49,6 +55,8 @@
                         Bekor qilish
                     </a>
                 </td>
+                {% endif %}
+                    
             </tr>
             {% endfor %}
         </tbody>
