@@ -294,11 +294,3 @@ urlpatterns += [
 
 
 
-# TODO
-# * Nazoratchi / Sotuvchi / Zapchast / Seryo ----> Profillar
-
-
-
-# Pul kirimlari
-# Brak mahsulot
-# Savdo

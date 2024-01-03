@@ -740,6 +740,15 @@ class SellBrakView(IsAdminRole, DetailView):
         if form.is_valid():
             brak.status = "sold"
             brak.save()
+            
+            Finance.objects.create(
+                executor=self.request.user,
+                cost=form.cleaned_data['price'],
+                comment="Brak mahsulot sotildi",
+                type='debit'
+            )
+            
+            
             return redirect("superuser:brak_list")
 
 
@@ -1527,8 +1536,7 @@ def stock_sell(request):
 
         if all(has == True for has in all_has):
             client = request.POST.get("client")
-            print(request.POST)
-            print(client)
+            
             card = ProductSalesCard.objects.create(
                 card_id=uuid4(), given_cost=data['given_cost'], client=client)
             cost_total = 0
@@ -1573,6 +1581,14 @@ def stock_sell(request):
                 taken_cost=data['given_cost'],
                 end_cost=float(cost_total) - float(data['given_cost']),
                 status=status
+            )
+            
+            Finance.objects.create(
+                executor=request.user,
+                cost=data['given_cost'],
+                comment=f"Savdo {client}",
+                type='debit'
+                
             )
 
             messages.success(request, "Mahsulot yuborildi")
@@ -1625,6 +1641,15 @@ def admin_sales(request):
                     end_cost=float(card.cost) - float(card.given_cost),
                     status=status
                 )
+                
+                Finance.objects.create(
+                    executor=request.user,
+                    cost=request.POST['taken_cost'],
+                    comment=f"Qarz olindi {card.client}",
+                    type="debit"
+                    
+                )
+                
                 messages.success(request, "Muvaffaqiyatli saqlandi")
         except:
             messages.error(
