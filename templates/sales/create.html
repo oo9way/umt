@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+
+{% block sidebar_items %}
+{% include '../superadmin/sidebar.html' %}
+{% endblock sidebar_items %}
+
+
+{% block content %}
+
+<h3 class="mt-2">Mahsulot kiritish</h3>
+<hr>
+
+<form method="post">
+    <div class="column-2">
+        {% csrf_token %}
+        {{form|crispy}}
+    </div>
+    <button type="submit" id="submit-btn" class="btn btn-primary">Kiritish</button>
+</form>
+
+
+
+{% endblock content %}

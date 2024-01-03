@@ -1,12 +1,17 @@
 from datetime import datetime
+from typing import Any
 from uuid import uuid4
+from django.forms.models import BaseModelForm
+
+from django.http import HttpRequest, HttpResponse
 from materials.models import ProductSales, ProductSalesCard, ProductSalesHistory, ProductStock
-from django.views.generic import ListView
+from django.views.generic import ListView, CreateView
+from sales.forms import ProductStockForm
 from sales.permissions import IsSalerRole
 import json
 from django.contrib import messages
 from django.shortcuts import redirect, render
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.db import transaction
 from django.db.models import Sum, Q, F, ExpressionWrapper
 from django.db.models.fields import IntegerField
@@ -213,3 +218,17 @@ def sales_history(request):
 class StockBarcodeView(IsSalerRole, ListView):
     model = ProductStock
     template_name = "superadmin/stock/barcodes.html"
+    
+    
+class CreateProductStockView(IsSalerRole, CreateView):
+    template_name = 'sales/create.html'
+    form_class = ProductStockForm
+    success_url = reverse_lazy('sales:stock-create')
+    
+    def form_valid(self, form):
+        instance = form.save(commit=False)
+        instance.is_active = "active"
+        instance.save()
+        
+        
+        return super().form_valid(form)

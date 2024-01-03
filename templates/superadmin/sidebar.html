@@ -126,6 +126,10 @@
 </div>
 
 <div class="sidebar-dropdown p-3 border-bottom dropdown">
+    <a href="{% url 'sales:stock-create' %}" class="nav-link">Mahsulot kiritish</a>
+</div>
+
+<div class="sidebar-dropdown p-3 border-bottom dropdown">
     <a class="dropdown-item" href="{% url 'sales:stock-sell' %}">Mijozga sotish</a>
 </div>
 
@@ -137,7 +141,6 @@
     <a class="dropdown-item" href="{% url 'superuser:sales-history' %}">Savdo tarixi</a>
 </div>
 {% endif %}
-    
 
 
 

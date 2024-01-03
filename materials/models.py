@@ -779,7 +779,7 @@ class ProductStock(models.Model):
     
     price = models.CharField(max_length=255)
     confirmed_price = models.CharField(max_length=255)
-    price_type = models.CharField(max_length=255, choices=CURRENCIES)
+    price_type = models.CharField(max_length=255, choices=CURRENCIES, default='uzs')
     
     design = models.ForeignKey(Design, on_delete=models.PROTECT)
     
