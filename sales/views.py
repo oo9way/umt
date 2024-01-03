@@ -232,3 +232,6 @@ class CreateProductStockView(IsSalerRole, CreateView):
         
         
         return super().form_valid(form)
+    
+    
+    

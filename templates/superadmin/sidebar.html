@@ -143,6 +143,27 @@
 {% endif %}
 
 
+{% if request.user.role == "SPARE" %}
+<div class="sidebar-dropdown p-3 border-bottom dropdown">
+    <a class="dropdown-item" href="{% url 'spare:dashboard' %}">Ehtiyot qism ombori</a>
+</div>
+
+<div class="sidebar-dropdown p-3 border-bottom dropdown">
+    <a class="dropdown-item" href="{% url 'spare:spare_export' %}">Ehtiyot qismlari eksport</a>
+</div>
+
+<div class="sidebar-dropdown p-3 border-bottom dropdown">
+    <a class="dropdown-item" href="{% url 'spare:spare_types' %}">Ehtiyot qism turlari</a>
+</div>
+
+<div class="sidebar-dropdown p-3 border-bottom dropdown">
+    <a class="dropdown-item" href="{% url 'spare:spare_history' %}">Tarix</a>
+</div>
+
+{% endif %}
+    
+
+
 
 <div class="sidebar-dropdown p-3 border-bottom dropdown">
     <a href="{% url 'users:logout' %}" class="nav-link">Chiqish</a>

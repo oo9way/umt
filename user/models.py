@@ -7,7 +7,8 @@ class User(AbstractUser):
         ADMIN = "ADMIN", "Admin"
         SALES = "SALES", "Savdo"
         MATERIALS = "MATERIAL", "Material"
-        PRODUCT = "PRODUCT", "Mahsulot"
+        SPARE = "SPARE", "Ehtiyot qism"
+        DIRECTOR = "DIRECTOR", "Nazoratchi"
 
     base_role = Role.ADMIN
 

@@ -17,6 +17,9 @@ class MainLoginView(LoginView):
             
             if self.request.user.role == "SALES":
                 return redirect(reverse("sales:dashboard"))
+            
+            if self.request.user.role == "SPARE":
+                return redirect(reverse("spare:dashboard"))
 
         return response
 

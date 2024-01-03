@@ -25,6 +25,7 @@ urlpatterns = [
     path("superuser/", include("superuser.urls", namespace="superuser")),
     path("material/", include("materials.urls", namespace="materials")),
     path("sales/", include("sales.urls", namespace="sales")),
+    path("spare/", include("spare.urls", namespace="spare")),
 ]
 
 if settings.DEBUG:
