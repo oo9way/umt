@@ -435,7 +435,7 @@ class Design(models.Model):
     season = models.CharField(max_length=6, choices=SEASON_TYPE)
     
     weight = models.CharField(max_length=16, default=0)
-    labels = models.CharField(max_length=16, default=0)
+    materials = models.CharField(max_length=16, default=0)
     expense = models.CharField(max_length=16, default=0)
     building = models.CharField(max_length=16, default=0)
     machine = models.CharField(max_length=16, default=0)
@@ -889,7 +889,7 @@ class DesignPriceHistory(models.Model):
     design_name = models.CharField(max_length=255)
     weight = models.CharField(max_length=16, default="0")
     exchange = models.CharField(max_length=16, default="0")
-    labels = models.CharField(max_length=16, default="0")
+    materials = models.CharField(max_length=16, default="0")
     expense = models.CharField(max_length=16, default="0")
     building = models.CharField(max_length=16, default="0")
     machine = models.CharField(max_length=16, default="0")

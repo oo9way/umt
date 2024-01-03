@@ -78,6 +78,14 @@
                 <th>Dizayn nomi</th>
                 <th>Jins</th>
                 <th>Mavsum</th>
+                <th>Og'irlik</th>
+                <th>Xomashyo narxi</th>
+                <th>Harajatlar</th>
+                <th>Bino</th>
+                <th>Stanok</th>
+                <th>Brak</th>
+                <th>Boshqa</th>
+                <th>Umumiy</th>
                 <th>Sana</th>
                 <th></th>
             </tr>
@@ -89,17 +97,24 @@
                 <td>{{obj.name}}</td>
                 <td>{{obj.get_sex_display}}</td>
                 <td>{{obj.get_season_display}}</td>
-                <td>{{obj.created_at}}</td>
+                <td>{{obj.weight}} gr</td>
+                <td>{{obj.materials}} $</td>
+                <td>{{obj.expense}} so'm</td>
+                <td>{{obj.building|truncatechars:7}} so'm</td>
+                <td>{{obj.machine|truncatechars:7}} so'm</td>
+                <td>{{obj.invalid|truncatechars:7}} so'm</td>
+                <td>{{obj.another_percent|truncatechars:7}} so'm</td>
+                <td>{{obj.total|truncatechars:7}} so'm</td>
                 <td>
                     <div class="d-flex gap-2 flex-row-reverse">
                         <a href="{% url 'superuser:design_delete' obj.id %}" class="btn btn-danger">
-                            O'chirish
+                            <i class="fa fa-trash"></i>
                         </a>
                         <a href="{% url 'superuser:design-edit-materials' obj.id %}" class="btn btn-success">
-                            O'zgartirish
+                            <i class="fa fa-pencil"></i>
                         </a>
                         <a href="{% url 'superuser:design-details' obj.id %}" class="btn btn-primary">
-                            Batafsil
+                            <i class="fa fa-eye"></i>
                         </a>
                     </div>
                 </td>

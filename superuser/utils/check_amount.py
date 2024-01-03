@@ -525,12 +525,12 @@ def create_price(design):
             field_amount = float(field.amount) / float(design.amount)
             field_price = m_price_for_gr * field_amount
 
-            print("Field price", field_price)
 
             material_price += field_price
 
         material_weight += float(field.amount) / float(design.amount)
 
+    material_price_usd = material_price
     material_price = round(material_price * float(exchange.usd_currency), 5)
 
     # Calculate labels of design
@@ -540,7 +540,7 @@ def create_price(design):
         label_type = label.label
 
         if label.price != "":
-            label_price += float(label.price)
+            label_price += float(label.price or 0)
 
         else:
             storage = LabelStorage.objects.filter(label_type=label_type).last()
@@ -592,7 +592,7 @@ def create_price(design):
         design_name=design.name,
         exchange=exchange.usd_currency,
         weight=material_weight,
-        labels=label_price,
+        materials=material_price_usd,
         expense=immutable_price,
         building=building_amortization,
         machine=machine_amortization,
@@ -602,7 +602,7 @@ def create_price(design):
     )
 
     design.weight = material_weight
-    design.labels = label_price
+    design.materials = material_price_usd
     design.expense = immutable_price
     design.building = building_amortization
     design.machine = machine_amortization

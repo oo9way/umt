@@ -88,29 +88,18 @@
 
     </table>
     <div class="mb-1">
-        <b>Umumiy og'irlik : <span id="weight"></span></b>
+        <b>Umumiy og'irlik : <span id="weight">
+            {{design.weight}} gr
+        </span></b>
     </div>
     <div class="d-flex mb-3">
         <b>Umumiy</b>
         <div class="mx-3">
-            <b class="font-weight-bold" id="uzs_total">$</b>
+            <b class="font-weight-bold" id="usd_total">
+                {{design.total}} so'm
+            </b>
         </div>
-        +
-        <div class="mx-3">
-            <b class="font-weight-bold" id="usd_total">$</b>
-        </div>
-        x
-        <div class="mx-3">
-            <b class="font-weight-bold" id="usd_to_uzs"></b>
-        </div>
-        +
-        <div class="mx-3">
-            <b class="font-weight-bold" id="percent_total">%</b>
-        </div>
-        =
-        <div class="mx-3">
-            <b class="font-weight-bold" id="end_total">%</b>
-        </div>
+        
     </div>
     <div>
     <a href="{% url 'superuser:design_home' %}" class="btn btn-primary">Ortga</a>
@@ -154,13 +143,10 @@
     let total_end = parseFloat(convert) * parseFloat(totalUSD) + parseFloat(totalUZS)
     let with_percent = total_end / 100 * (100 + percent)
 
-    document.getElementById('uzs_total').innerHTML = totalUZS + ' so`m';
-    document.getElementById('usd_total').innerHTML = totalUSD.toFixed(3) + ' $';
     document.getElementById('usd_to_uzs').innerHTML = parseFloat(convert) + ' so`m';
     document.getElementById('percent_total').innerHTML = percent.toLocaleString() + '%';
     document.getElementById('end_total').innerHTML = parseFloat(with_percent).toFixed(3) + ' so`m';
 
-    document.getElementById('weight').innerHTML = totalWeight + ' gramm'
 
 </script>
 

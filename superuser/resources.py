@@ -128,6 +128,15 @@ class DesignModelResource(resources.ModelResource):
     amount = fields.Field(column_name="Juft soni", attribute="amount")
     sex = fields.Field(column_name="Jins", attribute="get_sex_display")
     season = fields.Field(column_name="Mavsum", attribute="get_season_display")
+    weight = fields.Field(column_name="Og'irlik", attribute="weight")
+    materials = fields.Field(column_name="Homashyo narxi", attribute="materials")
+    expense = fields.Field(column_name="Harajatlar", attribute="expense")
+    building = fields.Field(column_name="Bino amortizatsiya", attribute="building")
+    machine = fields.Field(column_name="Stanok amortizatsiya", attribute="machine")
+    invalid = fields.Field(column_name="Brak", attribute="invalid")
+    another_percent = fields.Field(column_name="Boshqa", attribute="another_percent")
+    total = fields.Field(column_name="Umumiy", attribute="total")
+    
     created_at = fields.Field(column_name="Dastlabki qo'shish", attribute="created_at")
 
     class Meta:
