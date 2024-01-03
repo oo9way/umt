@@ -1,0 +1,353 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+
+
+{% block sidebar_items %}
+{% include '../sidebar.html' %}
+{% endblock sidebar_items %}
+
+
+{% block content %}
+
+<div class="d-flex align-items-center gap-3">
+    <h1 class="">
+        Mahsulot sotish
+    </h1>
+
+    <!-- Modal Export -->
+    <div class="modal fade" id="exportProduction" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Ishlab chiqarishga eksport
+                    </h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="client_add" />
+                        {{client_form|crispy}}
+                        <button type="submit" class="btn btn-primary">Saqlash</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Yopish</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#exportProduction">
+        <i class="fa fa-plus pr-3"></i>
+        * Mijoz kiritish
+    </button>
+</div>
+
+<div class="card p-4 mt-3" id="price_list">
+    <div class="card-title">Tanlangan mahsulotlar</div>
+    <table class="table" id="salesTable">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Mahsulot nomi</th>
+                <th>Miqdori</th>
+                <th>Narxi</th>
+                <th>Chegirma</th>
+                <th>Umumiy</th>
+                <th>Olib tashlash</th>
+            </tr>
+        </thead>
+        <tbody id="price_list_body">
+
+        </tbody>
+
+        <tfoot>
+            <tr>
+                <th class="py-3" colspan="5">
+                    <h4>Umumiy savdo</h4>
+                </th>
+                <th colspan="2">
+                    <h4 id="total_prices">0</h4>
+                </th>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div class="form-group mb-3">
+        <label>Mijoz</label>
+        <input type="text" id="client"  oninput="changeClient(this.value)" class="form-control">
+    </div>
+
+    <div class="form-group mb-3">
+        <label>Olingan pul miqdori</label>
+        <input class="form-control" oninput="changeGivenCost(this)">
+    </div>
+
+    <button type="button" id="send_btn" onclick="sendData()" class="btn btn-primary">Yuborish</button>
+</div>
+<div class="card p-4 mt-3">
+
+    <div class="card-title">Materiallarni tanlash</div>
+    <input type="text" id="myInput" class="form-control" onkeyup="myFunction()" placeholder="Qidirish..">
+    {% csrf_token %}
+    <input type="hidden" name="type" value="sales_add" />
+    <table class="table mb-4" id="myTable">
+        <thead>
+            <tr>
+                <th style="width: 50px;">Tanlash</th>
+                <th>Mahsulot nomi</th>
+                <th>Miqdori</th>
+                <th>Narxi</th>
+            </tr>
+
+        </thead>
+        <tbody>
+            {% for material in materials %}
+            <tr class="align-middle">
+                <td>
+                    <div class="form-check">
+                        <input class="form-check-input" id="product{{forloop.counter}}" type="checkbox"
+                            value="{{material.id}}">
+                    </div>
+                    <input type="hidden" id="product_id{{forloop.counter}}" value="{{material.id}}" />
+                </td>
+                <td id="design{{forloop.counter}}">{{ material.design }}</td>
+                <td id="set_amount{{forloop.counter}}">
+                    {{material.set_amount}}x{{material.product_per_set}}
+                    <div class="d-none" id="amount{{forloop.counter}}">{{material.set_amount}}</div>
+                    <div class="d-none" id="per_amount{{forloop.counter}}">{{material.product_per_set}}</div>
+                </td>
+                <td id="price{{forloop.counter}}">{{ material.confirmed_price }} {{ material.get_price_type_display}}
+                </td>
+                <td id="total{{forloop.counter}}"></td>
+            </tr>
+
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <button type="button" onclick="checkProducts()" class="btn btn-primary">Keyingisi</button>
+</div>
+
+<script>
+
+    function calcTotal() {
+        // Umumiy savdo
+        const salesTable = document.querySelector("#salesTable");
+        const salesTableColumn = 5; // index of the salesTableColumn to sum (0-based)
+
+        let sum = 0;
+        const salesTableBody = salesTable.querySelector("tbody");
+        for (let i = 0; i < salesTableBody.rows.length; i++) {
+            const row = salesTableBody.rows[i];
+            const cell = row.cells[salesTableColumn].innerText;
+            const value = parseFloat(cell.replace(/,/g, ""));
+            if (!isNaN(value)) {
+                sum += value;
+            }
+        }
+
+        const tfoot = salesTable.querySelector("tfoot");
+        const totalCell = tfoot.rows[0].cells[salesTableColumn];
+        document.getElementById("total_prices").innerHTML = sum.toLocaleString()
+    }
+
+</script>
+
+
+<script>
+    document.getElementById("price_list").style.display = "None";
+    var arr = [];
+    var items = localStorage.getItem('items')
+    if (items) {
+        localItems = JSON.parse(items)
+        arr = localItems
+        parseItems(localItems)
+    } else {
+        arr = []
+    }
+    var postArr = arr
+    var data = {
+        given_cost: 0,
+        client: document.getElementById("client").value,
+        items: postArr,
+    }
+
+
+
+    function checkProducts() {
+        document.getElementById("total_prices").innerHTML = "0"
+
+        var productsCount = parseInt("{{materials.count}}")
+        for (let i = 1; i < productsCount + 1; i++) {
+            let input = document.getElementById("product" + i);
+            if (input.checked) {
+                var price = document.getElementById("price" + i).innerText;
+                var design = document.getElementById("design" + i).innerText;
+                var pramount = document.getElementById("amount" + i).innerText;
+                var peramount = document.getElementById("per_amount" + i).innerText;
+                var product_id = document.getElementById("product_id" + i).value;
+
+
+
+                var pr = {
+                    id: parseInt(product_id),
+                    products: input.value,
+                    amount: pramount,
+                    peramount: peramount,
+                    design: design,
+                    client: client,
+                    price: price,
+                    discount: 0,
+                    total: 0,
+                }
+
+                const foundProduct = arr.find((p) => parseInt(p.id) === parseInt(product_id));
+                if (foundProduct) {
+                    console.log("Found")
+                } else {
+                    arr.push(pr)
+                }
+            }
+        }
+        localStorage.setItem('items', JSON.stringify(arr))
+        parseItems(arr)
+    }
+
+
+    function parseItems(items) {
+        var priceBody = ""
+        items.map((product, index) => {
+            priceBody += '<tr class="py-1"><td>' + (index + 1) + '</td><td><input type="hidden" id="selectedProduct' + index + '" value="' + product.products + '"></div>' + product.design + '</td><td><input onchange="myCalc(' + (index + 1) + ',' + parseFloat(product.price) * parseFloat(product.peramount) + ', ' + parseFloat(product.amount) + ')" type="number" class="form-control w-75" id="productAmount' + (index + 1) + '"/></td><td><span id="productPrice">' + parseFloat(product.price).toLocaleString() + '</span> so`m</td><td><input class="form-control" onkeyup="myCalc(' + (index + 1) + ',' + parseFloat(product.price) * parseFloat(product.peramount) + ', ' + parseFloat(product.amount) + ')" w-75" id="productDiscount' + (index + 1) + '"/></td><td id="productTotal' + (index + 1) + '"></td><td><button class="btn btn-danger btn-sm" onclick="removeItem(' + product.id + ')"><i  class="fa fa-times"></i></button></td></tr>'
+        })
+        document.getElementById("price_list").style.display = "block"
+        document.getElementById("price_list_body").innerHTML = priceBody
+    }
+
+    function myFunction() {
+        var input, filter, table, tr, td, i, txtValue;
+        input = document.getElementById("myInput");
+        filter = input.value.toUpperCase();
+        table = document.getElementById("myTable");
+        tr = table.getElementsByTagName("tr");
+
+        for (i = 0; i < tr.length; i++) {
+            td = tr[i].getElementsByTagName("td")[1];
+            if (td) {
+                txtValue = td.textContent || td.innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+    }
+
+    var sendBtn = document.getElementById('send_btn');
+    sendBtn.disabled = true;
+
+    function myCalc(index, price, pramount) {
+        sendBtn.disabled = false;
+        var amount = document.getElementById("productAmount" + index).value
+        var discount = document.getElementById("productDiscount" + index).value
+        if (!amount) {
+            amount = 0
+            sendBtn.disabled = true;
+        } else {
+            if (amount > pramount) {
+                sendBtn.disabled = false;
+                document.getElementById("productAmount" + index).value = pramount
+                amount = pramount
+
+            }
+        }
+        if (!discount) {
+            discount = 0
+        } else {
+            if (discount < 0) {
+                document.getElementById("productDiscount" + index).value = 0
+            }
+        }
+
+        var total = (parseFloat(amount) * parseFloat(price)) - parseFloat(discount)
+
+        if (discount > total) {
+            discount = 0
+            document.getElementById("productDiscount" + index).value = 0
+            total = (parseFloat(amount) * parseFloat(price))
+        }
+        var prIndex = index - 1
+        postArr[prIndex].amount = amount
+        postArr[prIndex].discount = discount
+        postArr[prIndex].total = total
+
+        if (amount == 0) {
+            sendBtn.disabled = true
+        }
+
+        document.getElementById("productTotal" + index).innerText = total.toLocaleString()
+        calcTotal()
+    }
+
+    function sendData() {
+        let form = document.createElement("form");
+        form.setAttribute("method", "post");
+        form.setAttribute("action", "")
+
+        const csrftoken = getCookie("csrftoken");
+
+        let csrf = document.createElement('input');
+        csrf.setAttribute("type", "hidden");
+        csrf.setAttribute("name", "csrfmiddlewaretoken");
+        csrf.setAttribute("value", csrftoken);
+        form.appendChild(csrf)
+
+        let p_data = document.createElement('input');
+        p_data.setAttribute("name", "data")
+        p_data.setAttribute("value", JSON.stringify(data))
+
+        let client_data = document.createElement('input');
+        client_data.setAttribute("name", "client")
+        client_data.setAttribute("value",  document.getElementById("client").value)
+
+        form.style.display = "none";
+        form.appendChild(p_data)
+        form.appendChild(client_data)
+
+        document.body.appendChild(form)
+        form.submit()
+
+
+    }
+
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) {
+            return parts.pop().split(";").shift();
+        }
+    }
+
+    function changeGivenCost(input) {
+        data.given_cost = input.value
+    }
+
+    function changeClient(input) {
+        data.client = input.value
+    }
+
+
+    function removeItem(id) {
+        const newarr = arr.filter(product => parseInt(product.id) !== parseInt(id))
+        localStorage.setItem('items', JSON.stringify(newarr))
+        parseItems(newarr)
+        arr = newarr
+        document.getElementById('total_prices').innerHTML = "0"
+    }
+</script>
+
+
+
+{% endblock content %}

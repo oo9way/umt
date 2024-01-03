@@ -39,6 +39,7 @@ from superuser.views import (
     admin_insert_design_materials,
     admin_pre_production_send,
     admin_pre_production_send_list,
+    admin_sales,
     admin_unclosed_salaries,
     admin_worker_account,
     admin_worker_credits,
@@ -46,6 +47,9 @@ from superuser.views import (
     admin_worker_stats,
     admin_workers,
     production_send_yaim,
+    remove_local_storage,
+    sales_history,
+    stock_sell,
 )
 
 from superuser.utils.generate_xls import *
@@ -214,6 +218,11 @@ urlpatterns +=[
 
 urlpatterns +=[
     path("dashboard/stock/", StockView.as_view(), name="stock"),
+    path("dashboard/stock/sell/", stock_sell, name="stock-sell"),
+    path('dashboard/stock/remove/', remove_local_storage, name='stock-remove'),
+    path('dashboard/sales/', admin_sales, name='sales'),
+    path('dashboard/sales/history', sales_history, name='sales-history'),
+
     path("dashboard/stock/barcodes/", StockBarcodeView.as_view(), name="stock-barcodes"),
 ]
 
@@ -275,9 +284,10 @@ urlpatterns += [
 
 
 # TODO
-# * Manager profiles +
-# * Workers +
-# * Production / Send YAIM + 
-# * Yaim / Send Sklad 
-# * Tayyor mahsulot / Savdo 
 # * Nazoratchi / Sotuvchi / Zapchast / Seryo ----> Profillar
+
+
+
+# Pul kirimlari
+# Brak mahsulot
+# Savdo

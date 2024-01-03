@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load mathfilters %}
+{% load humanize %}
+
+{% block sidebar_items %}
+{% include '../sidebar.html' %}
+{% endblock sidebar_items %}
+
+
+{% block content %}
+<div class="d-flex align-items-center gap-3">
+    <h1 class="">
+        Savdo
+    </h1>
+
+</div>
+<div class="card p-4 mt-3">
+    <div class="card-title h3">Tugallanmagan savdolar</div>
+    <div class="table-responsive">
+        <table class="table mb-4" id="materialTable">
+            <thead>
+                <tr>
+                    <th>Mijoz</th>
+                    <th>Narxi</th>
+                    <th>Berilgan pul</th>
+                    <th>Holat</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sale in unfinished_sales %}
+                <tr>
+                    <td>{{ sale.client }}</td>
+                    <td>{{ sale.cost|intcomma }}</td>
+                    <td>{{ sale.given_cost|intcomma }}</td>
+                    <td>
+                        {% if sale.cost|sub:sale.given_cost == 0 %}
+                        <span class="badge bg-success badge-sm">Tugatilgan</span>
+        
+                        {% else %}
+                        <span class="badge bg-danger badge-sm">Qarz</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#salescard{{sale.id}}">
+                            <i class="fa fa-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#payment{{sale.id}}">
+                            Pul kiritish
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+
+    {% for sale in unfinished_sales %}
+    <div class="modal fade" id="salescard{{sale.id}}" tabindex="-1" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Savdo ma'lumotlari</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Mahsulot</th>
+                                <th>Miqdori</th>
+                                <th>Chegirma</th>
+                                <th>Umumiy</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in sale.productsales_set.all %}
+                            <tr>
+                                <td>{{product.product}}</td>
+                                <td>{{product.amount}}x{{product.per_set}}</td>
+                                <td>{{product.discount|intcomma}}</td>
+                                <td>{{product.cost|intcomma}}</td>
+                            </tr>
+
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="payment{{sale.id}}" tabindex="-1" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Savdo ma'lumotlari</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="bg-info p-3 rounded">
+                        {% with total=sale.cost|sub:sale.given_cost %}
+                        <h6>Umumiy miqdorda mijozning <b>{{total|intcomma}}</b> so'm miqdorida qarzi
+                            mavjud
+                        </h6>
+                        {% endwith %}
+                    </div>
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="card" value="{{sale.card_id}}">
+                        <div class="form-group my-3">
+                            <label for="taken_cost">Olingan pul</label>
+                            <input class="form-control" name="taken_cost" />
+                        </div>
+                        <button class="btn btn-primary" type="submit">Saqlash</button>
+                        <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Bekor qilish</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+</div>
+
+
+<div class="card p-4 mt-3">
+        <div class="card-title col-sm-6 h3">Yakunlangan savdolar</div>
+        
+            <form method="get row align-items-end">    
+                <div class="form-group row col-sm-4 align-items-end">
+                    <div class="col-sm-6">
+                        <label for="">Oy bo'yicha filterlash</label>
+                        <input type="month" name="date" class="form-control" lang="uz-uz">
+                    </div>
+                    <div class="col-sm-6 align-items-end mt-2">
+                    <button class="btn btn-primary">Aniqlash</button>
+                    </div>
+                </div>
+            </form>
+    <div class="table-responsive">
+    <table class="table mb-4 mt-3" id="materialTable">
+        <thead>
+            <tr>
+                <th>Mijoz</th>
+                <th>Narxi</th>
+                <th>Berilgan pul</th>
+                <th>Holat</th>
+                <th>Sana</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sale in finished_sales %}
+            <tr>
+                <td>{{ sale.client }}</td>
+                <td>{{ sale.cost|intcomma }}</td>
+                <td>{{ sale.given_cost|intcomma }}</td>
+                <td>
+                    {% if sale.cost|sub:sale.given_cost == 0 %}
+                    <span class="badge bg-success badge-sm">Tugatilgan</span>
+
+                    {% else %}
+                    <span class="badge bg-danger badge-sm">Qarz</span>
+                    {% endif %}
+                </td>
+                <td>{{ sale.created_at }}</td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <th><b>Jami: </b></th>
+                <th colspan="4">
+                    {{total_sales|intcomma}} so'm
+                </th>
+            </tr>
+        </tbody>
+    </table>
+    </div>
+
+</div>
+
+{% endblock content %}
