@@ -15,9 +15,13 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, reverse
 from django.conf import settings
 from django.conf.urls.static import static
+from django.shortcuts import redirect
+
+def redirect_login(request):
+    return redirect(reverse('users:login'))
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -26,6 +30,7 @@ urlpatterns = [
     path("material/", include("materials.urls", namespace="materials")),
     path("sales/", include("sales.urls", namespace="sales")),
     path("spare/", include("spare.urls", namespace="spare")),
+    path('', redirect_login)
 ]
 
 if settings.DEBUG:
