@@ -9,7 +9,6 @@ from django.urls import reverse, reverse_lazy
 from django.shortcuts import render, redirect
 from django.views.generic import (
     ListView,
-    View,
     UpdateView,
     DeleteView,
     DetailView,
@@ -785,6 +784,14 @@ class ExpenditureView(IsAdminRole, ListView):
             expenditure = form.save(commit=False)
             expenditure.executor = self.request.user
             expenditure.save()
+            
+            Finance.objects.create(
+                executor=self.request.user,
+                cost=expenditure.cost,
+                comment=f"Harajat - {expenditure.comment}",
+            )
+            
+            
             return redirect("superuser:expenditure")
 
 
@@ -1239,6 +1246,8 @@ class FinanceView(IsAdminRole, ListView):
             finance = form.save(commit=False)
             finance.executor = self.request.user
             finance.save()
+            
+            
             return redirect("superuser:finance")
 
 
@@ -1700,10 +1709,6 @@ def sales_history(request):
         
     if request.GET.get('end'):
         query = ProductSalesHistory.objects.filter(created_at__lte=date_to)
-        
-        
-    print(request.GET.get('end'))
-    
         
     
     context = {

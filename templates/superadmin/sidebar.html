@@ -167,6 +167,48 @@
 </div>
 
 {% endif %}
+
+
+{% if request.user.role == "DIRECTOR" %}
+
+<div class="sidebar-dropdown p-3 border-bottom dropdown">
+    <a href="{% url 'director:dashboard' %}" class="nav-link">Homashyo ombori</a>
+</div>
+
+<div class="sidebar-dropdown p-3 border-bottom dropdown">
+    <a href="{% url 'director:spare' %}" class="nav-link">Ehtiyot qism ombori</a>
+</div>
+    
+<div class="sidebar-dropdown p-3 border-bottom dropdown">
+    <a href="{% url 'director:label' %}" class="nav-link">Etiketika ombori</a>
+</div>
+
+<div class="sidebar-dropdown p-3 border-bottom dropdown">
+    <a href="{% url 'director:pre-production' %}" class="nav-link">Yarim tayyor mahsulotlar</a>
+</div>
+
+<div class="sidebar-dropdown p-3 border-bottom dropdown">
+    <a href="{% url 'director:stock' %}" class="nav-link">Tayyor mahsulotlar ombori</a>
+</div>
+
+<div class="sidebar-dropdown p-3 border-bottom dropdown">
+    <a href="{% url 'director:sales' %}" class="nav-link">Savdolar</a>
+</div>
+
+<div class="sidebar-dropdown p-3 border-bottom dropdown">
+    <a href="{% url 'director:sales-history' %}" class="nav-link">Savdo tarixi</a>
+</div>
+
+<div class="sidebar-dropdown p-3 border-bottom dropdown">
+    <a href="{% url 'director:expenditure' %}" class="nav-link">Harajatlar</a>
+</div>
+
+<div class="sidebar-dropdown p-3 border-bottom dropdown">
+    <a href="{% url 'director:finance' %}" class="nav-link">Kirim/Chiqimlar</a>
+</div>
+
+    
+{% endif %}
     
 
 

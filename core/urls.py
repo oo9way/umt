@@ -30,6 +30,7 @@ urlpatterns = [
     path("material/", include("materials.urls", namespace="materials")),
     path("sales/", include("sales.urls", namespace="sales")),
     path("spare/", include("spare.urls", namespace="spare")),
+    path("director/", include("director.urls", namespace="director")),
     path('', redirect_login)
 ]
 

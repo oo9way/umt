@@ -1,4 +1,12 @@
-MATERIAL +
-SAVDO +
-ZAPCHAST +
-NAZORATCHI
+NAZORATCHI:
+    mahsulot ombori ko'rish +
+    zapchast ombori ko'rish +
+    etiketika ombori ko'rish
+    yarim tayyor mahsulot ko'rish
+    tayyor mahsulotlar ko'rish
+    Savdo + pul kiritish
+    savdo tarixi
+    harajatlar
+    kirim chiqim + functions
+
+

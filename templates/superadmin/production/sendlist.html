@@ -23,100 +23,104 @@
        Yarim tayyor mahsulot / Mahsulot turlari
     </h3>
     <!-- Modal Export -->
-    <div class="modal fade" id="exportProduction" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">2-sort brak mahsulot chiqarish
-                    </h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form method="post">
-                        {% csrf_token %}
-                        <input type="hidden" name="type" value="export">
-                        <input type="hidden" name="brak" value="second">
+   
+   {% if request.user.role != "DIRECTOR" %}
+   <div class="modal fade" id="exportProduction" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">2-sort brak mahsulot chiqarish
+                </h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="type" value="export">
+                    <input type="hidden" name="brak" value="second">
 
-                        <div class="form-group mb-3">
-                            <label class="form-label">Dizayn turi*</label>
-                            <select name="design" class="form-control selectpicker" data-live-search="true" required>
-                                {% for design in designs %}
-                                <option value="{{ design.id}}">
-                                    {{ design.name }}
-                                </option>
+                    <div class="form-group mb-3">
+                        <label class="form-label">Dizayn turi*</label>
+                        <select name="design" class="form-control selectpicker" data-live-search="true" required>
+                            {% for design in designs %}
+                            <option value="{{ design.id}}">
+                                {{ design.name }}
+                            </option>
 
-                                {% endfor %}
-                            </select>
-                        </div>
+                            {% endfor %}
+                        </select>
+                    </div>
 
-                        <div class="form-group mb-3">
-                            <label class="form-label">Brak mahsulot hajmi (dona)</label>
-                            <input type="text" placeholder="Brak mahsulot hajmi" name="per_amount" class="form-control">
-                        </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">Brak mahsulot hajmi (dona)</label>
+                        <input type="text" placeholder="Brak mahsulot hajmi" name="per_amount" class="form-control">
+                    </div>
 
-                        <div class="form-group mb-3">
-                            <label class="form-label">Brak mahsulot hajmi (gramm)</label>
-                            <input type="text" placeholder="Brak mahsulot hajmi" name="gr_amount" class="form-control">
-                        </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">Brak mahsulot hajmi (gramm)</label>
+                        <input type="text" placeholder="Brak mahsulot hajmi" name="gr_amount" class="form-control">
+                    </div>
 
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Yopish</button>
-                        <button type="submit" class="btn btn-primary">Yuborish</button>
-                    </form>
-                </div>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Yopish</button>
+                    <button type="submit" class="btn btn-primary">Yuborish</button>
+                </form>
             </div>
         </div>
     </div>
+</div>
 
-    <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#exportProduction">
-        <i class="fa fa-arrow-up pr-3"></i>
-        2-sort
-    </button>
+<button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#exportProduction">
+    <i class="fa fa-arrow-up pr-3"></i>
+    2-sort
+</button>
 
 
 
-    <div class="modal fade" id="exportThird" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">3-sort brak mahsulot chiqarish
-                    </h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form method="post">
-                        {% csrf_token %}
-                        <input type="hidden" name="type" value="export">
-                        <input type="hidden" name="brak" value="third">
+<div class="modal fade" id="exportThird" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">3-sort brak mahsulot chiqarish
+                </h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="type" value="export">
+                    <input type="hidden" name="brak" value="third">
 
-                        <div class="form-group mb-3">
-                            <label class="form-label">Dizayn turi*</label>
-                            <select name="design" class="form-control selectpicker" data-live-search="true" required>
-                                {% for design in designs %}
-                                <option value="{{ design.id}}">
-                                    {{ design.name }}
-                                </option>
+                    <div class="form-group mb-3">
+                        <label class="form-label">Dizayn turi*</label>
+                        <select name="design" class="form-control selectpicker" data-live-search="true" required>
+                            {% for design in designs %}
+                            <option value="{{ design.id}}">
+                                {{ design.name }}
+                            </option>
 
-                                {% endfor %}
-                            </select>
-                        </div>
+                            {% endfor %}
+                        </select>
+                    </div>
 
-                        <div class="form-group mb-3">
-                            <label class="form-label">Brak mahsulot hajmi (gramm)</label>
-                            <input type="text" placeholder="Brak mahsulot hajmi" name="gr_amount" class="form-control">
-                        </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">Brak mahsulot hajmi (gramm)</label>
+                        <input type="text" placeholder="Brak mahsulot hajmi" name="gr_amount" class="form-control">
+                    </div>
 
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Yopish</button>
-                        <button type="submit" class="btn btn-primary">Yuborish</button>
-                    </form>
-                </div>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Yopish</button>
+                    <button type="submit" class="btn btn-primary">Yuborish</button>
+                </form>
             </div>
         </div>
     </div>
+</div>
 
-    <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#exportThird">
-        <i class="fa fa-arrow-up pr-3"></i>
-        3-sort
-    </button>
+<button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#exportThird">
+    <i class="fa fa-arrow-up pr-3"></i>
+    3-sort
+</button>
+   {% endif %}
+    
 </div>
 
 <div class="card p-4 mt-3">
@@ -127,9 +131,13 @@
                 <th>Nom</th>
                 <th>Tannarx</th>
                 <th>Miqdor</th>
+                
+                {% if request.user.role != "DIRECTOR" %}
                 <th>
                     Yuborish
                 </th>
+                {% endif %}
+                    
             </tr>
         </thead>
         <tbody>
@@ -144,6 +152,8 @@
                 <td>
                     {{product.amount}}
                 </td>
+                {% if request.user.role != "DIRECTOR" %}
+
                 <td>
 
                     <a class="btn btn-sm btn-primary" href="{% url 'superuser:pre-production-send' product.pk %}">
@@ -151,6 +161,7 @@
                         Yuborish
                     </a>
                 </td>
+                {%endif%}
             </tr>
             {% endfor %}
         </tbody>
