@@ -2,6 +2,7 @@ from django.urls import path
 from superuser.forms import SellBrak
 from superuser.views import (
     BrakListView,
+    DesignPriceHistoryView,
     DesignView,
     ExpenditureView,
     FinanceView,
@@ -147,7 +148,6 @@ urlpatterns += [
     ),
 ]
 
-
 # DESIGN VIEWS
 urlpatterns += [
     path("dashboard/design/home/", DesignView.as_view(), name="design_home"),
@@ -161,40 +161,40 @@ urlpatterns += [
         admin_edit_design_materials,
         name="design-edit-materials",
     ),
-    
+
     path(
         "dashboard/design/details/<int:pk>/",
         admin_design_details,
         name="design-details",
     ),
     path("dashboard/design/delete/<int:pk>/", DesignDeleteView.as_view(), name="design_delete"),
-    
+    path("dashboard/design/price/history/", DesignPriceHistoryView.as_view(), name="design_price_history"),
+
 ]
 
-
 urlpatterns += [
-    path("dashboard/production/material/history/", ProductionMaterialHistory.as_view(), name="production_material_history"),
+    path("dashboard/production/material/history/", ProductionMaterialHistory.as_view(),
+         name="production_material_history"),
     path("dashboard/production/brak/", BrakListView.as_view(), name="brak_list"),
     path("dashboard/production/brak/sell/<int:pk>/", SellBrakView.as_view(), name="sell_brak"),
     path("dashboard/production/send-yaim/", production_send_yaim, name="send_yaim"),
 ]
 
-urlpatterns +=[
+urlpatterns += [
     path("dashboard/expenditure/", ExpenditureView.as_view(), name="expenditure"),
 ]
 
-
-urlpatterns +=[
+urlpatterns += [
     path("dashboard/profiles/", UserView.as_view(), name="profiles"),
 ]
 
 # FINANCE
-urlpatterns +=[
+urlpatterns += [
     path("dashboard/finance/", FinanceView.as_view(), name="finance"),
 ]
 
 # PRE PRODUCTION
-urlpatterns +=[
+urlpatterns += [
     path("dashboard/pre-production/", admin_pre_production_send_list, name="pre-production"),
     path('dashboard/pre-production/send-list/<int:pk>', admin_pre_production_send,
          name='pre-production-send'),
@@ -202,7 +202,7 @@ urlpatterns +=[
 
 # WORKERS
 
-urlpatterns +=[
+urlpatterns += [
     path("dashboard/workers/", admin_workers, name="workers"),
     path('dashboard/workers/<int:pk>/', admin_worker_details, name='worker-details'),
     path('dashboard/workers/account/<int:pk>/', admin_worker_account, name='worker-accounts'),
@@ -213,10 +213,9 @@ urlpatterns +=[
     path('dashboard/workers/stats/', admin_worker_stats, name='register-workers-stats'),
 ]
 
-
 # STOCK
 
-urlpatterns +=[
+urlpatterns += [
     path("dashboard/stock/", StockView.as_view(), name="stock"),
     path("dashboard/stock/sell/", stock_sell, name="stock-sell"),
     path('dashboard/stock/remove/', remove_local_storage, name='stock-remove'),
@@ -225,8 +224,6 @@ urlpatterns +=[
 
     path("dashboard/stock/barcodes/", StockBarcodeView.as_view(), name="stock-barcodes"),
 ]
-
-
 
 # EXCEL GENERATORS
 urlpatterns += [
@@ -260,32 +257,33 @@ urlpatterns += [
         GenerateLabelExcel.as_view(),
         name="label_xls",
     ),
-    
+
     path(
         "dashboard/design/generate-xls/",
         GenerateDesignExcel.as_view(),
         name="design_xls",
     ),
-    
+
     path(
         "dashboard/expenditure/generate-xls/",
         GenerateExpenditureExcel.as_view(),
         name="expenditure_xls",
     ),
-    
+
     path(
         "dashboard/finance/generate-xls/",
         GenerateFinanceExcel.as_view(),
         name="finance_xls",
     ),
+    path(
+        "dashboard/design/history/generate-xls/",
+        GenerateDesignPriceHistoryExcel.as_view(),
+        name="design_price_history_xls",
+    ),
 ]
-
-
-
 
 # TODO
 # * Nazoratchi / Sotuvchi / Zapchast / Seryo ----> Profillar
-
 
 
 # Pul kirimlari

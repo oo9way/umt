@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 {% load humanize %}
+{% load mathfilters %}
 
 {% block sidebar_items %}
 {% include './sidebar.html' %}
@@ -9,10 +10,12 @@
 
 {% block content %}
 
-<h3 class="mt-2">Homashyo</h3>
+<h3 class="mt-2">Homashyo ombori</h3>
 <hr>
 <br>
 
+
+{% if request.user.role != "DIRECTOR" %}
 <form method="post">
     <div class="column-2">
         {% csrf_token %}
@@ -25,7 +28,8 @@
 <hr>
 
 <br>
-
+{% endif %}
+    
 <a href="{% url 'superuser:material_xls' %}" class="btn btn-success mb-3">Excelda olish </a>
 <div class="table-responsive">
     <table class="table">
@@ -36,8 +40,13 @@
                 <th>Miqdori</th>
                 <th>Narxi</th>
                 <th>Tasdiqlangan narxi</th>
+                {% if request.user.role == "DIRECTOR" %}
+                <th>Umumiy</th>
+                {% endif %}
                 <th>Holati</th>
+                {% if request.user.role != "DIRECTOR"%}
                 <th>Izoh</th>
+                {% endif %}
             </tr>
         </thead>
         <tbody>
@@ -45,11 +54,16 @@
             <tr>
                 <td>{{forloop.counter0|add:page_obj.start_index}}</td>
                 <td>{{obj.material.name}}</td>
-                <td>{{obj.amount|intcomma}} {{obj.get_amount_type_display}} </td>
+                <td>{{obj.amount|floatformat|intcomma}} {{obj.get_amount_type_display}} </td>
                 <td>{{obj.price|intcomma}} {{obj.get_price_type_display}}</td>
                 <td>{{obj.confirmed_price|intcomma}} {{obj.get_price_type_display}}</td>
+                {% if request.user.role == "DIRECTOR" %}
+                <td>{{obj.total_price|floatformat|intcomma}} {{obj.get_price_type_display}}</td>
+                {% endif %}
                 <td>{{obj.get_is_active_display}}</td>
+                {% if request.user.role != "DIRECTOR"%}
                 <td>{{obj.import_comment}}</td>
+                {% endif %}
             </tr>
             {% endfor %}
         </tbody>
@@ -66,7 +80,7 @@
         <br>
         <h6 class="current">
             {{ page_obj.paginator.num_pages }} - {{ page_obj.number }} sahifa.
-            </h4>
+            </h6>
             <br>
 
 

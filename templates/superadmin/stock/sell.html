@@ -17,6 +17,44 @@
 
 
 <div class="card p-4 mt-3" id="price_list">
+    <div class="d-flex justify-content-between">
+        <div style="max-width: 250px" class="form-group mb-3">
+            <label>Yuk xati #</label>
+            <input type="text" id="sale_number" oninput="changeSaleNumber(this.value)"  class="form-control">
+        </div>
+
+        <div style="min-width: 250px" class="form-group mb-3">
+            <label>Sana #</label>
+            <input type="date" id="sale_date" oninput="changeSaleDate(this.value)"  class="form-control">
+        </div>
+    </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group mb-3">
+                    <label>Mijoz nomi</label>
+                    <input type="text" id="client"  oninput="changeClient(this.value)" class="form-control">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group mb-3">
+                    <label>Manzili</label>
+                    <input type="text" id="address" oninput="changeClientAddress(this.value)"  class="form-control">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group mb-3">
+                    <label>Telefon raqami</label>
+                    <input type="text" id="phone" oninput="changeClientPhone(this.value)"  class="form-control">
+                </div>
+
+            </div>
+        </div>
+
+
+
+
+
     <div class="card-title">Tanlangan mahsulotlar</div>
     <table class="table" id="salesTable">
         <thead>
@@ -46,14 +84,11 @@
         </tfoot>
     </table>
 
-    <div class="form-group mb-3">
-        <label>Mijoz</label>
-        <input type="text" id="client"  oninput="changeClient(this.value)" class="form-control">
-    </div>
+
 
     <div class="form-group mb-3">
         <label>Olingan pul miqdori</label>
-        <input class="form-control" oninput="changeGivenCost(this)">
+        <input class="form-control" oninput="changeGivenCost(this.value)">
     </div>
 
     <button type="button" id="send_btn" onclick="sendData()" class="btn btn-primary">Yuborish</button>
@@ -62,6 +97,8 @@
 
     <div class="card-title">Materiallarni tanlash</div>
     <input type="text" id="myInput" class="form-control" onkeyup="myFunction()" placeholder="Qidirish..">
+    <button type="button" onclick="checkProducts()" class="btn btn-primary mt-3">Keyingisi</button>
+
     {% csrf_token %}
     <input type="hidden" name="type" value="sales_add" />
     <table class="table mb-4" id="myTable">
@@ -99,7 +136,6 @@
         </tbody>
     </table>
 
-    <button type="button" onclick="checkProducts()" class="btn btn-primary">Keyingisi</button>
 </div>
 
 <script>
@@ -143,6 +179,10 @@
     var data = {
         given_cost: 0,
         client: document.getElementById("client").value,
+        sale_number: document.getElementById("sale_number").value,
+        sale_date: document.getElementById("sale_date").value,
+        client_address: document.getElementById("address").value,
+        phone_number: document.getElementById("phone").value,
         items: postArr,
     }
 
@@ -303,11 +343,27 @@
     }
 
     function changeGivenCost(input) {
-        data.given_cost = input.value
+        data.given_cost = input
     }
 
     function changeClient(input) {
-        data.client = input.value
+        data.client = input
+    }
+
+    function changeSaleNumber(input) {
+        data.sale_number = input
+    }
+
+    function changeSaleDate(input) {
+        data.sale_date = input
+    }
+
+    function changeClientAddress(input) {
+        data.client_address = input
+    }
+
+    function changeClientPhone(input) {
+        data.phone_number = input
     }
 
 

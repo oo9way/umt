@@ -20,6 +20,12 @@ class MainLoginView(LoginView):
             
             if self.request.user.role == "SPARE":
                 return redirect(reverse("spare:dashboard"))
+            
+            if self.request.user.role == "DIRECTOR":
+                return redirect(reverse("director:dashboard"))
+                
+            if self.request.user.role == "INACTIVE":
+                return redirect(reverse("users:login"))
 
         return response
 

@@ -11,14 +11,19 @@
 {% block choice %}
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<style>
+    .form-check{
+        display:none !important;
+    }
+</style>
 {% endblock choice %}
 
 
 {% block content %}
 <div class="d-flex align-items-center gap-3">
-    <h1 class="">
-        Dizayn uchun materiallar va harajatlar
-    </h1>
+    <h3 class="">
+        Dizayn uchun materiallar va harajatlar | {{design.name}}
+    </h3>
 </div>
 
 <div class="card p-4 mt-3">
@@ -31,7 +36,7 @@
         <div class="mb-3 row">
             {{ form.management_form }}
             {% for field in form%}
-            <div class="col-md-4 mb-2">{{field|crispy}}</div>
+            <div class="col-md-2 mb-2">{{field|crispy}}</div>
             {% endfor %}
         </div>
         <hr>
@@ -46,21 +51,22 @@
                         value="{{design.designlabel_set.all.0.id}}" {% else %} value="" {% endif %}>
                     <select name="label1" id="" class="form-control selectmultiple">
                         {% if design.designlabel_set.all.0 %}
-                        <option value="{{design.designlabel_set.all.0.label.id}}">
-                            {{ design.designlabel_set.all.0.label.name }}</option>
+                        <option value="{{ design.designlabel_set.all.0.label.id }}">
+                            {{design.designlabel_set.all.0.label }}
+                        </option>
                         <option value="cancel">-- o'chirish -- </option>
                         {% else %}
-                        <option value="">Etiketikani tanlang</option>
-                        {% endif %}
+
                         {% for label in labels %}
                         <option value="{{label.id}}">{{label.name}}</option>
                         {% endfor %}
+                        {% endif %}
                     </select>
                 </div>
 
                 <div class="form-group mb-2">
                     <label for="" class="mb-1">Narxi</label>
-                    <input type="number" placeholder="Etiketika narxi" value="{{ design.designlabel_set.all.0.price }}"
+                    <input type="number" placeholder="Etiketika narxi" value="{% if design.designlabel_set.all.0 %}{{ design.designlabel_set.all.0.price }}{% else %}125{%endif%}"
                         name="label1_amount" class="form-control">
                 </div>
             </div>
@@ -203,125 +209,7 @@
 
         </div>
 
-        <!-- <div class="mb-3 row">
-            <div class="col-md-2 mb-2">
-                <div class="row">
-                    <div class="col-7">
-                        <div class="form-group mb-2">
-                            <label for="" class="mb-1">Etiketika 1</label>
-                            <input type="number" placeholder="Miqdori" name="salary_amount" class="form-control">
-                        </div>
-                    </div>
-                    <div class="col-5">
-                        <div class="form-group mb-2">
-                            <label for="" class="mb-1">His. turi</label>
-                            <select name="calc_type" id="" class="form-control">
-                                <option value="sum">so'm</option>
-                                <option value="percent">Foiz %</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-2 mb-2">
-                <div class="row">
-                    <div class="col-7">
-                        <div class="form-group mb-2">
-                            <label for="" class="mb-1">Etiketika</label>
-                            <input type="number" placeholder="Miqdori" name="salary_amount" class="form-control">
-                        </div>
-                    </div>
-                    <div class="col-5">
-                        <div class="form-group mb-2">
-                            <label for="" class="mb-1">His. turi</label>
-                            <select name="calc_type" id="" class="form-control">
-                                <option value="sum">so'm</option>
-                                <option value="percent">Foiz %</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-2 mb-2">
-                <div class="row">
-                    <div class="col-7">
-                        <div class="form-group mb-2">
-                            <label for="" class="mb-1">Etiketika</label>
-                            <input type="number" placeholder="Miqdori" name="salary_amount" class="form-control">
-                        </div>
-                    </div>
-                    <div class="col-5">
-                        <div class="form-group mb-2">
-                            <label for="" class="mb-1">His. turi</label>
-                            <select name="calc_type" id="" class="form-control">
-                                <option value="sum">so'm</option>
-                                <option value="percent">Foiz %</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2 mb-2">
-                <div class="row">
-                    <div class="col-7">
-                        <div class="form-group mb-2">
-                            <label for="" class="mb-1">Ish haqi miqdori</label>
-                            <input type="number" placeholder="Miqdori" name="salary_amount" class="form-control">
-                        </div>
-                    </div>
-                    <div class="col-5">
-                        <div class="form-group mb-2">
-                            <label for="" class="mb-1">His. turi</label>
-                            <select name="calc_type" id="" class="form-control">
-                                <option value="sum">so'm</option>
-                                <option value="percent">Foiz %</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2 mb-2">
-                <div class="row">
-                    <div class="col-7">
-                        <div class="form-group mb-2">
-                            <label for="" class="mb-1">Ish haqi miqdori</label>
-                            <input type="number" placeholder="Miqdori" name="salary_amount" class="form-control">
-                        </div>
-                    </div>
-                    <div class="col-5">
-                        <div class="form-group mb-2">
-                            <label for="" class="mb-1">His. turi</label>
-                            <select name="calc_type" id="" class="form-control">
-                                <option value="sum">so'm</option>
-                                <option value="percent">Foiz %</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2 mb-2">
-                <div class="row">
-                    <div class="col-7">
-                        <div class="form-group mb-2">
-                            <label for="" class="mb-1">Ish haqi miqdori</label>
-                            <input type="number" placeholder="Miqdori" name="salary_amount" class="form-control">
-                        </div>
-                    </div>
-                    <div class="col-5">
-                        <div class="form-group mb-2">
-                            <label for="" class="mb-1">His. turi</label>
-                            <select name="calc_type" id="" class="form-control">
-                                <option value="sum">so'm</option>
-                                <option value="percent">Foiz %</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div> -->
-
+   
         <hr>
         <div class="card-title h2">
             Umumiy harajatlar
@@ -513,7 +401,7 @@
                         {% if design.designimmutable_set.all.6 and design.designimmutable_set.all.6.task == 'building' %}
                         value="{{design.designimmutable_set.all.6.cost}}" 
                         {% else %}
-                        value="7"
+                        {% if design.season == "summer" %} value="5" {% else %} value="7" {% endif %}
                         {% endif %} />
                 </div>
                 <div class="form-group mb-2">
@@ -544,7 +432,7 @@
                         {% if design.designimmutable_set.all.7 and design.designimmutable_set.all.7.task == 'stanok' %}
                         value="{{design.designimmutable_set.all.7.cost}}" 
                         {% else %}
-                        value="7"
+                        {% if design.season == "summer" %} value="5" {% else %} value="7" {% endif %}
                         {% endif %} 
                         />
                 </div>
@@ -590,6 +478,27 @@
     </form>
 </div>
 
+
+<script>
+    const inputs = document.querySelectorAll('input[type="text"]');
+        let currentInputIndex = 0;
+
+        // Set focus on first input
+        inputs[currentInputIndex].focus();
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'ArrowRight') {
+                // Move focus to the next input on the right
+                currentInputIndex = Math.min(currentInputIndex + 1, inputs.length - 1);
+                inputs[currentInputIndex].focus();
+            } else if (event.key === 'ArrowLeft') {
+                // Move focus to the next input on the left
+                currentInputIndex = Math.max(currentInputIndex - 1, 0);
+                inputs[currentInputIndex].focus();
+            }
+        });
+
+</script>
 
 <script>
     $(document).ready(function () {

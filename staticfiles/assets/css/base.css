@@ -1,0 +1,13 @@
+.column-2 {
+  display: grid;
+  column-gap: 20px;
+  grid-auto-flow: column;
+}
+
+label {
+  font-size: 14px;
+}
+
+.sidebar-dropdown {
+  min-width: 250px;
+}

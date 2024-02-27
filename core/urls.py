@@ -15,18 +15,26 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, reverse
+from django.shortcuts import redirect
 from django.conf import settings
 from django.conf.urls.static import static
 
+
+def redirect_login(request):
+    return redirect(reverse('users:login'))
+
 urlpatterns = [
+    
     path("admin/", admin.site.urls),
     path("auth/", include("user.urls", namespace="users")),
     path("superuser/", include("superuser.urls", namespace="superuser")),
     path("material/", include("materials.urls", namespace="materials")),
     path("sales/", include("sales.urls", namespace="sales")),
     path("spare/", include("spare.urls", namespace="spare")),
+    path("director/", include("director.urls", namespace="director")),
+    path("", redirect_login)
 ]
 
-if settings.DEBUG:
-    urlpatterns +=static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+urlpatterns +=static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

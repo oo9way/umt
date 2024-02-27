@@ -22,17 +22,24 @@
         <table class="table mb-4" id="materialTable">
             <thead>
                 <tr>
+                    <th>#</th>
                     <th>Mijoz</th>
+                    <th>Telefon</th>
+                    <th>Manzil</th>
                     <th>Narxi</th>
                     <th>Berilgan pul</th>
                     <th>Holat</th>
+                    <th>Sana</th>
                     <th></th>
                 </tr>
             </thead>
             <tbody>
                 {% for sale in unfinished_sales %}
                 <tr>
+                    <td>{{ sale.contract_id }}</td>
                     <td>{{ sale.client }}</td>
+                    <td>{{ sale.phone_number }}</td>
+                    <td>{{ sale.address }}</td>
                     <td>{{ sale.cost|intcomma }}</td>
                     <td>{{ sale.given_cost|intcomma }}</td>
                     <td>
@@ -51,6 +58,7 @@
                             Pul kiritish
                         </button>
                     </td>
+                <td>{{ sale.contract_date }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

@@ -101,7 +101,7 @@ class MaterialStorage(models.Model):
         confirmed_price = request.POST.get("confirmed_price")
         price_type = request.POST.get("price_type")
         amount_type = request.POST.get("amount_type")
-        
+
         is_active = "active" if request.user.role == "ADMIN" else "pending"
         print(is_active)
 
@@ -422,6 +422,8 @@ class Design(models.Model):
     SEX_TYPE = (
         ("male", "Erkak"),
         ("female", "Ayol"),
+        ("young", "O'smir"),
+        ("baby", "Bola"),
     )
 
     SEASON_TYPE = (
@@ -434,10 +436,35 @@ class Design(models.Model):
     sex = models.CharField(max_length=10, choices=SEX_TYPE)
     season = models.CharField(max_length=6, choices=SEASON_TYPE)
 
+    weight = models.FloatField(default=0.0)
+    materials = models.FloatField(default=0)
+    expense = models.IntegerField(default=0)
+    building = models.IntegerField(default=0)
+    machine = models.IntegerField(default=0)
+    invalid = models.IntegerField(default=0)
+    another_percent = models.IntegerField(default=0)
+    total = models.IntegerField(default=0)
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
+
+
+class DesignPriceHistory(models.Model):
+    design_name = models.CharField(max_length=255)
+    weight = models.CharField(max_length=16, default="0")
+    exchange = models.CharField(max_length=16, default="0")
+    materials = models.CharField(max_length=16, default="0")
+    expense = models.CharField(max_length=16, default="0")
+    building = models.CharField(max_length=16, default="0")
+    machine = models.CharField(max_length=16, default="0")
+    invalid = models.CharField(max_length=16, default="0")
+    another_percent = models.CharField(max_length=16, default="0")
+    total = models.CharField(max_length=16, default="0")
+
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 class DesignImmutable(models.Model):
@@ -776,19 +803,17 @@ class ProductStock(models.Model):
 
     set_amount = models.IntegerField(max_length=255)
     product_per_set = models.IntegerField(max_length=255)
-    
+
     price = models.CharField(max_length=255)
     confirmed_price = models.CharField(max_length=255)
     price_type = models.CharField(max_length=255, choices=CURRENCIES, default='uzs')
-    
+
     design = models.ForeignKey(Design, on_delete=models.PROTECT)
-    
+
     comment = models.CharField(max_length=255)
 
-    
     is_active = models.CharField(choices=ACTIVE, default="pending", max_length=8)
-    
-    
+
     barcode = models.CharField(max_length=255, blank=True)
 
     def save(self, *args, **kwargs):
@@ -805,10 +830,8 @@ class ProductStock(models.Model):
 
             # Save the barcode filename to the database
             self.barcode = filename
-        
-        super(ProductStock, self).save(*args, **kwargs)
 
-    
+        super(ProductStock, self).save(*args, **kwargs)
 
     def __str__(self) -> str:
         return self.design.name
@@ -852,6 +875,10 @@ class ProductSalesCard(models.Model):
     card_id = models.CharField(max_length=1000)
     cost = models.CharField(max_length=255, default=0)
     given_cost = models.CharField(max_length=255, default=0)
+    contract_date = models.DateField(null=True, blank=True)
+    contract_id = models.CharField(null=True, blank=True, max_length=255)
+    address = models.CharField(null=True, blank=True, max_length=255)
+    phone_number = models.CharField(null=True, blank=True, max_length=255)
 
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)

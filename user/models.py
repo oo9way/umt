@@ -9,6 +9,7 @@ class User(AbstractUser):
         MATERIALS = "MATERIAL", "Material"
         SPARE = "SPARE", "Ehtiyot qism"
         DIRECTOR = "DIRECTOR", "Nazoratchi"
+        INACTIVE = "INACTIVE", "Nofaol"
 
     base_role = Role.ADMIN
 

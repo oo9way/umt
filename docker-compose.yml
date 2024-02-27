@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  web: &web
+    container_name: ${PROJECT_NAME}_web
+    depends_on:
+      - db
+    build: .
+    volumes:
+      - .:/home/app/
+      - ./static:/home/app/static/
+      - ./media:/home/app/media/
+    env_file:
+      - ./.env
+    command: gunicorn core.wsgi:application --bind 0.0.0.0:${PORT}
+    ports:
+      - ${PORT}:${PORT}
+    restart: always
+
+
+  db:
+    image: postgres:15
+    container_name: ${PROJECT_NAME}_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_HOST=${DB_HOST}
+      - POSTGRES_PORT=${DB_PORT}
+    restart: always
+
+
+  redis:
+    container_name: ${PROJECT_NAME}_redis
+    image: redis:5.0
+    restart: always
+
+  celery_worker:
+    <<: *web
+    container_name: ${PROJECT_NAME}_worker
+    ports: [ ]
+    command: celery -A core worker -l INFO
+    restart: always
+
+  celery_beat:
+    <<: *web
+    container_name: ${PROJECT_NAME}_beat
+    ports: [ ]
+    command: celery -A core beat -l INFO
+    restart: always
+
+volumes:
+  postgres_data:
+

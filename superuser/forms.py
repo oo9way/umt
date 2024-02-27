@@ -95,11 +95,9 @@ class InsertLabelTypeForm(forms.ModelForm):
 class AdminDesign(forms.ModelForm):
     class Meta:
         model = Design
-        fields = "__all__"
+        fields = ("name", "amount", "sex", "season",)
         labels = {
             "name": "Nomi",
-            "materials": "Material turi",
-            "label": "Etiketika turi",
             "amount": "Juft miqdori",
             "sex": "Jinsi",
             "season": "Mavsumi",
@@ -118,7 +116,7 @@ InlineDesignField = forms.models.inlineformset_factory(
     DesignField,
     labels={"material_type": "Homashyo turi", "amount": "Miqdori"},
     fields=("material_type", "amount"),
-    extra=12,
+    extra=4,
 )
 
 

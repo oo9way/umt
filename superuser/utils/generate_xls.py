@@ -5,17 +5,17 @@ from superuser.resources import *
 from django.http import HttpResponse
 
 
-class GenerateMaterialExcel(IsAdminRole, View):
+class GenerateMaterialExcel(View):
     def get(self, request, *args, **kwargs):
         dataset = MaterialModelResource().export(
             MaterialStorage.objects.all().order_by("-id")
         )
         response = HttpResponse(dataset.xls, content_type="application/vnd.ms-excel")
-        response["Content-Disposition"] = 'attachment; filename="homashyo ombori.xlsx"'
+        response["Content-Disposition"] = 'attachment; filename="homashyo ombori.xls"'
         return response
 
 
-class GenerateMaterialHistoryExcel(IsAdminRole, View):
+class GenerateMaterialHistoryExcel(View):
     def get(self, request, *args, **kwargs):
         dataset = MaterialHistoryModelResource().export(
             MaterialStorageHistory.objects.all().order_by("-id")
@@ -23,11 +23,11 @@ class GenerateMaterialHistoryExcel(IsAdminRole, View):
         response = HttpResponse(dataset.xls, content_type="application/vnd.ms-excel")
         response[
             "Content-Disposition"
-        ] = 'attachment; filename="homashyo ombori tarixi.xlsx"'
+        ] = 'attachment; filename="homashyo ombori tarixi.xls"'
         return response
 
 
-class GenerateSpareExcel(IsAdminRole, View):
+class GenerateSpareExcel(View):
     def get(self, request, *args, **kwargs):
         dataset = SpareModelResource().export(
             SpareStorage.objects.all().order_by("-id")
@@ -35,11 +35,11 @@ class GenerateSpareExcel(IsAdminRole, View):
         response = HttpResponse(dataset.xls, content_type="application/vnd.ms-excel")
         response[
             "Content-Disposition"
-        ] = 'attachment; filename="ehtiyot qism ombori.xlsx"'
+        ] = 'attachment; filename="ehtiyot qism ombori.xls"'
         return response
 
 
-class GenerateSpareHistoryExcel(IsAdminRole, View):
+class GenerateSpareHistoryExcel(View):
     def get(self, request, *args, **kwargs):
         dataset = SpareHistoryModelResource().export(
             SpareStorageHistory.objects.all().order_by("-id")
@@ -47,33 +47,33 @@ class GenerateSpareHistoryExcel(IsAdminRole, View):
         response = HttpResponse(dataset.xls, content_type="application/vnd.ms-excel")
         response[
             "Content-Disposition"
-        ] = 'attachment; filename="ehtiyot qism ombori tarixi.xlsx"'
+        ] = 'attachment; filename="ehtiyot qism ombori tarixi.xls"'
         return response
 
 
-class GenerateLabelExcel(IsAdminRole, View):
+class GenerateLabelExcel(View):
     def get(self, request, *args, **kwargs):
         dataset = LabelModelResource().export(
             LabelStorage.objects.all().order_by("-id")
         )
         response = HttpResponse(dataset.xls, content_type="application/vnd.ms-excel")
-        response["Content-Disposition"] = 'attachment; filename="etiketika ombori.xlsx"'
+        response["Content-Disposition"] = 'attachment; filename="etiketika ombori.xls"'
         return response
 
 
-class GenerateLabelHistoryExcel(IsAdminRole, View):
+class GenerateLabelHistoryExcel(View):
     def get(self, request, *args, **kwargs):
         
         dataset = LabelHistoryModelResource().export(
             LabelStorageHistory.objects.all().order_by("-id")
         )
         response = HttpResponse(dataset.xls, content_type="application/vnd.ms-excel")
-        response["Content-Disposition"] = 'attachment; filename="etiketika tarixi.xlsx"'
+        response["Content-Disposition"] = 'attachment; filename="etiketika tarixi.xls"'
         return response
 
 
 
-class GenerateDesignExcel(IsAdminRole, View):
+class GenerateDesignExcel(View):
     def get(self, request, *args, **kwargs):
         queryset = Design.objects.all().order_by("-id")
         
@@ -95,12 +95,43 @@ class GenerateDesignExcel(IsAdminRole, View):
             queryset = queryset.filter(season=season)
         
         response = HttpResponse(dataset.xls, content_type="application/vnd.ms-excel")
-        response["Content-Disposition"] = 'attachment; filename="Dizaynlar.xlsx"'
+        response["Content-Disposition"] = 'attachment; filename="Dizaynlar.xls"'
+        return response
+        
+        
+class GenerateDesignPriceHistoryExcel(IsAdminRole, View):
+    def get(self, request, *args, **kwargs):
+        queryset = DesignPriceHistory.objects.all().order_by("-id")
+        
+
+        date_from = self.request.GET.get("date_from")
+        date_to = self.request.GET.get("date_to")
+        name = self.request.GET.get("name")
+    
+        
+        if date_from:
+            queryset = queryset.filter(created_at__gte=date_from)
+
+        if date_to:
+            queryset = queryset.filter(created_at__lte=date_to)
+            
+        if name:
+            queryset = queryset.filter(design_name__icontains=name)
+    
+
+        dataset = DesignPriceHistoryModelResource().export(
+            queryset
+        )
+        
+        
+        response = HttpResponse(dataset.xls, content_type="application/vnd.ms-excel")
+        response["Content-Disposition"] = 'attachment; filename="Dizaynlar narxlar tarixi.xlsx"'
         return response
 
 
 
-class GenerateExpenditureExcel(IsAdminRole, View):
+
+class GenerateExpenditureExcel(View):
     def get(self, request, *args, **kwargs):
         queryset = Expenditure.objects.all().order_by("-id")
         
@@ -119,11 +150,11 @@ class GenerateExpenditureExcel(IsAdminRole, View):
             
         
         response = HttpResponse(dataset.xls, content_type="application/vnd.ms-excel")
-        response["Content-Disposition"] = 'attachment; filename="Harajatlar.xlsx"'
+        response["Content-Disposition"] = 'attachment; filename="Harajatlar.xls"'
         return response
 
 
-class GenerateFinanceExcel(IsAdminRole, View):
+class GenerateFinanceExcel(View):
     def get(self, request, *args, **kwargs):
         queryset = Finance.objects.all().order_by("-id")
         
@@ -142,5 +173,5 @@ class GenerateFinanceExcel(IsAdminRole, View):
             
         
         response = HttpResponse(dataset.xls, content_type="application/vnd.ms-excel")
-        response["Content-Disposition"] = 'attachment; filename="kirim-chiqimlar.xlsx"'
+        response["Content-Disposition"] = 'attachment; filename="kirim-chiqimlar.xls"'
         return response

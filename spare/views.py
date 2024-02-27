@@ -21,7 +21,7 @@ class SpareListView(IsSpareRole, ListView):
 
     def post(self, request, *args, **kwargs):
         SpareStorage.import_spare(request)
-        return redirect(reverse("superuser:spare_list"))
+        return redirect(reverse("spare:dashboard"))
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -48,13 +48,13 @@ class SpareTypeListView(IsSpareRole, ListView):
         form = InsertSpareTypeForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect(reverse("superuser:spare_types"))
+            return redirect(reverse("spare:spare_types"))
 
 
 class SpareTypeUpdateView(IsSpareRole, UpdateView):
     model = SpareType
     fields = ["name"]
-    success_url = reverse_lazy("superuser:spare_types")
+    success_url = reverse_lazy("spare:spare_types")
     template_name = "superadmin/spare/spare_type_form.html"
 
 
@@ -104,7 +104,7 @@ class SpareExportView(IsSpareRole, ListView):
         if float(spare.amount) >= float(amount):
             spare.export(request.user, amount, where)
 
-        return redirect(reverse("superuser:spare_export"))
+        return redirect(reverse("spare:spare_export"))
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

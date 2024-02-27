@@ -1,0 +1,366 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+{% load mathfilters %}
+
+{% block sidebar_items %}
+{% include '../superadmin/sidebar.html' %}
+{% endblock sidebar_items %}
+
+
+{% block content %}
+
+<h3 class="mt-2">Homashyo ombori</h3>
+<hr>
+<br>
+
+{% if request.user.role == "DIRECTOR" %}
+    <div class="row mb-4 gy-3">
+        <div class="col-xl-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <span>Xomashyo turlari</span>
+                    <h2>{{ material.types_count }}</h2>
+                </div>
+                <div class="card-footer" style="font-size: 14px">
+                    Ombordagi barcha xomashyo turlari soni
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <span>Xomashyo miqdori</span>
+                    <h2>{{ material.count|floatformat }} t</h2>
+                </div>
+                <div class="card-footer" style="font-size: 14px">
+                    Ombordagi barcha xomashyo hajmi
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <span>Umumiy narxi</span>
+                    <h2>{{ material.total_price|floatformat|intcomma }} $</h2>
+
+                </div>
+                <div class="card-footer" style="font-size: 14px">
+                    Ombordagi barcha xomashyo narxlari
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3">
+        <div class="card bg-danger text-white">
+            <div class="card-body">
+                <span>Umumiy tasdiqlangan narxi</span>
+                <h2>{{ material.total_confirmed_price|floatformat|intcomma }} $</h2>
+            </div>
+            <div class="card-footer" style="font-size: 14px">
+                Ombordagi barcha xomashyo narxlari
+            </div>
+        </div>
+    </div>
+
+        <div class="col-xl-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <span>Ehtiyot qism turlari</span>
+                    <h2>{{ spare.types_count }}</h2>
+                </div>
+                <div class="card-footer" style="font-size: 14px">
+                    Ombordagi barcha ehtiyot qism turlari soni
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <span>Ehtiyot qism miqdori</span>
+                    <h2>{{ spare.count|intcomma }} dona</h2>
+                </div>
+                <div class="card-footer" style="font-size: 14px">
+                    Ombordagi barcha ehtiyot qism miqdori
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <span>Ehtiyot qism narxi</span>
+                    <h2>{{ spare.total_price|floatformat|intcomma }} $</h2>
+
+                </div>
+                <div class="card-footer" style="font-size: 14px">
+                    Ombordagi barcha ehtiyot qism narxlari
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3">
+        <div class="card bg-danger text-white">
+            <div class="card-body">
+                <span>Umumiy tasdiqlangan narxi</span>
+                <h2>{{ spare.total_confirmed_price|floatformat|intcomma }} $</h2>
+            </div>
+            <div class="card-footer" style="font-size: 14px">
+                Ombordagi barcha ehtiyot qism narxlari
+            </div>
+        </div>
+    </div>
+
+        <div class="col-xl-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <span>Etiketika turlari</span>
+                    <h2>{{ label.types_count }}</h2>
+                </div>
+                <div class="card-footer" style="font-size: 14px">
+                    Ombordagi barcha etiketika turlari soni
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <span>Etiketika miqdori</span>
+                    <h2>{{ label.count|intcomma }} dona</h2>
+                </div>
+                <div class="card-footer" style="font-size: 14px">
+                    Ombordagi barcha etiketika hajmi
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <span>Etiketika umumiy narxi</span>
+                    <h2>{{ label.total_price|floatformat|intcomma }} UZS</h2>
+
+                </div>
+                <div class="card-footer" style="font-size: 14px">
+                    Ombordagi barcha etiketika narxlari
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3">
+        <div class="card bg-danger text-white">
+            <div class="card-body">
+                <span>Umumiy tasdiqlangan narxi</span>
+                <h2>{{ label.total_confirmed_price|floatformat|intcomma }} UZS</h2>
+            </div>
+            <div class="card-footer" style="font-size: 14px">
+                Ombordagi barcha etiketika narxlari
+            </div>
+        </div>
+    </div>
+
+        <div class="col-xl-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <span>Yarim tayyor mahsulot turi</span>
+                    <h2>{{ pre_production.types_count|intcomma }}</h2>
+                </div>
+                <div class="card-footer" style="font-size: 14px">
+                    Barcha yarim tayyor mahsulot turlari
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <span>Yarim tayyor mahsulot soni</span>
+                    <h2>{{ pre_production.count }} <dona></dona></h2>
+                </div>
+                <div class="card-footer" style="font-size: 14px">
+                    Yarim tayyor mahsulotlar soni
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <span>Yarim tayyor mahsulot summasi</span>
+                    <h2>{{ pre_production.total_price|floatformat|intcomma }} UZS</h2>
+
+                </div>
+                <div class="card-footer" style="font-size: 14px">
+                    Yarim tayyor mahsulot summasi
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3">
+        <div class="card bg-danger text-white">
+            <div class="card-body">
+                <span>Umumiy tasdiqlangan narxi</span>
+                <h2>{{ pre_production.total_confirmed_price|floatformat|intcomma }} UZS</h2>
+            </div>
+            <div class="card-footer" style="font-size: 14px">
+                Yarim tayyor mahsulot tasdiqlangan narxi
+            </div>
+        </div>
+    </div>
+
+        <div class="col-xl-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <span>Tayyor mahsulot turlari</span>
+                    <h2>{{ product.types_count|intcomma }}</h2>
+                </div>
+                <div class="card-footer" style="font-size: 14px">
+                    Ombordagi barcha tayyor mahsulot turlari soni
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <span>Tayyor mahsulot miqdori</span>
+                    <h2>{{ product.count|intcomma }} dona</h2>
+                </div>
+                <div class="card-footer" style="font-size: 14px">
+                    Ombordagi barcha tayyor mahsulot miqdori
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <span>Tayyor mahsulot summasi</span>
+                    <h2>{{ product.total_price|floatformat|intcomma }} UZS</h2>
+
+                </div>
+                <div class="card-footer" style="font-size: 14px">
+                    Ombordagi barcha mahsulot summasi
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <span>Umumiy tasdiqlangan narxi</span>
+                    <h2>{{ product.total_confirmed_price|floatformat|intcomma }} UZS</h2>
+                </div>
+                <div class="card-footer" style="font-size: 14px">
+                    Ombordagi barcha mahsulot narxlari
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <span>Mijozlari soni</span>
+                    <h2>{{ sales.types_count }}</h2>
+                </div>
+                <div class="card-footer" style="font-size: 14px">
+                    Savdo qilingan barcha mijozlar soni
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <span>Sotilgan mahsulot miqdori</span>
+                    <h2>{{ sales.count|intcomma }} dona</h2>
+                </div>
+                <div class="card-footer" style="font-size: 14px">
+                    Barcha sotilgan mahsulot miqdori
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <span>Sotilgan mahsulot summasi</span>
+                    <h2>{{ sales.total_price|floatformat|intcomma }} UZS</h2>
+
+                </div>
+                <div class="card-footer" style="font-size: 14px">
+                    Sotilgan barcha mahsulot summasi
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3">
+        <div class="card bg-danger text-white">
+            <div class="card-body">
+                <span>Umumiy tasdiqlangan narxi</span>
+                <h2>{{ sales.total_confirmed_price|floatformat|intcomma }} UZS</h2>
+            </div>
+            <div class="card-footer" style="font-size: 14px">
+                Sotilgan mahsulotlarning umumiy tasdiqlangan narxlari
+            </div>
+        </div>
+    </div>
+
+        <div class="col-xl-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <span>Umumiy harajat summasi</span>
+                    <h2>{{ finance.total_credits|intcomma }} UZS</h2>
+                </div>
+                <div class="card-footer" style="font-size: 14px">
+                    Umumiy harajatlar summasi
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <span>Umumiy tushgan pullar</span>
+                    <h2>{{ finance.total_debits|intcomma }} UZS</h2>
+                </div>
+                <div class="card-footer" style="font-size: 14px">
+                    Umumiy olingan pullar
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <span>Mijozlarning qarzlari</span>
+                    <h2>{{ finance.total_loans|intcomma }} UZS</h2>
+
+                </div>
+                <div class="card-footer" style="font-size: 14px">
+                    Mijozlarning umumiy qarzlari
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3">
+        <div class="card bg-danger text-white">
+            <div class="card-body">
+                <span>Taxminiy foyda summasi</span>
+                <h2>{{ finance.total_profit|floatformat|intcomma }} UZS</h2>
+            </div>
+            <div class="card-footer" style="font-size: 14px">
+                Taxminiy foyda summasi
+            </div>
+        </div>
+    </div>
+    </div>
+
+
+{% endif %}
+
+{% endblock content %}

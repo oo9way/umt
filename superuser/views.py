@@ -6,10 +6,10 @@ from django.db.models import Sum, Q, F, ExpressionWrapper
 
 from django.http.response import HttpResponse as HttpResponse
 from django.urls import reverse, reverse_lazy
+
 from django.shortcuts import render, redirect
 from django.views.generic import (
     ListView,
-    View,
     UpdateView,
     DeleteView,
     DetailView,
@@ -22,6 +22,7 @@ from materials.models import (
     DesignField,
     DesignImmutable,
     DesignLabel,
+    DesignPriceHistory,
     Finance,
     MaterialStorage,
     MaterialStorageHistory,
@@ -51,9 +52,10 @@ from materials.models import (
     WorkerAccount,
     WorkerCredit,
     WorkerDebit,
-    WorkerFine
+    WorkerFine,
+    WHERE
 )
-from superuser.utils.check_amount import check_amount, insert_worker_stats
+from superuser.utils.check_amount import check_amount, create_price, insert_worker_stats
 from user.models import User
 
 from django.db import transaction
@@ -76,8 +78,8 @@ from superuser.forms import (
     AdminDesignFieldForm,
     AdminImmutables,
     SellBrak,
-    ImportMaterialToProduction, 
-    ExpenditureForm    
+    ImportMaterialToProduction,
+    ExpenditureForm
 )
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
@@ -144,7 +146,6 @@ class MaterialHistoryListView(IsAdminRole, ListView):
     template_name = "superadmin/materialhistory.html"
     paginate_by = 20
     ordering = ["-updated_at"]
-    
 
 
 class MaterialInActivesListView(IsAdminRole, ListView):
@@ -449,6 +450,7 @@ class DesignView(IsAdminRole, ListView):
         context["name"] = self.request.GET.get("name", None)
         context["sex"] = self.request.GET.get("sex", None)
         context["season"] = self.request.GET.get("season", None)
+        context["page"] = self.request.GET.get("page", None)
 
         return context
 
@@ -458,7 +460,7 @@ def admin_insert_design_materials(request, pk):
         design = Design.objects.get(id=pk)
 
         if design.designfield_set.count() == 0:
-            material_type = MaterialType.objects.all()
+            material_type = MaterialType.objects.all().exclude(name__icontains="salafan")
             design_fields = []
             for mt in material_type:
                 design_fields.append(DesignField(material_type=mt, design_type=design))
@@ -473,6 +475,7 @@ def admin_insert_design_materials(request, pk):
 
 
 def admin_edit_design_materials(request, pk):
+    page_num = request.GET.get('page', None)
     try:
         design = Design.objects.get(id=pk)
         form = InlineDesignField(
@@ -660,11 +663,20 @@ def admin_edit_design_materials(request, pk):
             get_addition.cost = addition_amount
             get_addition.save()
 
+            create_price(design)
+
             messages.success(request, "Dizayn muvaffaqiyatli kiritildi")
         else:
             messages.error(request, "Formada xatolik bor")
 
-        return redirect("superuser:design_home")
+        t_url = reverse('superuser:design_home')
+
+        redirect_url = t_url
+
+        if page_num:
+            redirect_url = f'{t_url}?page={page_num}'
+
+        return redirect(redirect_url)
 
     context = {
         "menu": "design",
@@ -688,7 +700,6 @@ class DesignDeleteView(IsAdminRole, DeleteView):
     model = Design
     success_url = reverse_lazy("superuser:design_home")
     template_name = "superadmin/design/delete.html"
-
 
 
 class ProductionMaterialHistory(IsAdminRole, ListView):
@@ -737,6 +748,14 @@ class SellBrakView(IsAdminRole, DetailView):
         if form.is_valid():
             brak.status = "sold"
             brak.save()
+
+            Finance.objects.create(
+                executor=self.request.user,
+                cost=form.cleaned_data['price'],
+                comment="Brak mahsulot sotildi",
+                type='debit'
+            )
+
             return redirect("superuser:brak_list")
 
 
@@ -773,6 +792,13 @@ class ExpenditureView(IsAdminRole, ListView):
             expenditure = form.save(commit=False)
             expenditure.executor = self.request.user
             expenditure.save()
+
+            Finance.objects.create(
+                executor=self.request.user,
+                cost=expenditure.cost,
+                comment=f"Harajat - {expenditure.comment}",
+            )
+
             return redirect("superuser:expenditure")
 
 
@@ -795,7 +821,6 @@ class UserView(IsAdminRole, CreateView):
         return context
 
 
-
 @transaction.atomic
 def production_send_yaim(request):
     if request.user.is_authenticated and request.user.role == 'ADMIN':
@@ -806,7 +831,7 @@ def production_send_yaim(request):
 
         if request.method == "POST":
             r = int(request.POST['rows_amount'])
-            for l in range(1, r+1):
+            for l in range(1, r + 1):
                 try:
                     field = {
                         "field_id": l,
@@ -822,8 +847,8 @@ def production_send_yaim(request):
                     fields.append(field)
                 except:
                     pass
-            response = check_amount(fields,request)
-            return JsonResponse({'success':True, 'data':response})
+            response = check_amount(fields, request)
+            return JsonResponse({'success': True, 'data': response})
 
         context = {
             'menu': 'production_send',
@@ -832,7 +857,7 @@ def production_send_yaim(request):
         }
 
         if 'rows' in request.GET:
-            arr = range(1, int(request.GET['rows'])+1)
+            arr = range(1, int(request.GET['rows']) + 1)
             context = {
                 'menu': 'production_send',
                 'workers': workers,
@@ -850,15 +875,12 @@ class WorkerListCreateView(IsAdminRole, ListView):
     paginate_by = 20
     ordering = ["-id"]
     template_name = "superadmin/workers/list_create.html"
-    
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # context['form'] = WorkerForm
         return context
-    
-    
-    
+
 
 def admin_workers(request):
     current_month = datetime.now().month
@@ -887,7 +909,8 @@ def admin_workers(request):
                 worker = Worker.objects.get(id=request.POST['worker_id'])
 
                 worker_accounts = WorkerAccount.objects.filter(
-                    created_at__month=current_month, created_at__year=current_year).filter(worker=worker).filter(completed=False)
+                    created_at__month=current_month, created_at__year=current_year).filter(worker=worker).filter(
+                    completed=False)
                 if len(worker_accounts) == 1:
                     worker_account = worker_accounts.last()
                 elif len(worker_accounts) == 0:
@@ -921,7 +944,8 @@ def admin_workers(request):
                 worker = Worker.objects.get(id=request.POST['worker_id'])
 
                 worker_accounts = WorkerAccount.objects.filter(
-                    created_at__month=current_month, created_at__year=current_year).filter(worker=worker).filter(completed=False)
+                    created_at__month=current_month, created_at__year=current_year).filter(worker=worker).filter(
+                    completed=False)
                 if len(worker_accounts) == 1:
                     worker_account = worker_accounts.last()
                 elif len(worker_accounts) == 0:
@@ -955,7 +979,8 @@ def admin_workers(request):
                 worker = Worker.objects.get(id=request.POST['worker_id'])
 
                 worker_accounts = WorkerAccount.objects.filter(
-                    created_at__month=current_month, created_at__year=current_year).filter(worker=worker).filter(completed=False)
+                    created_at__month=current_month, created_at__year=current_year).filter(worker=worker).filter(
+                    completed=False)
                 if len(worker_accounts) == 1:
                     worker_account = worker_accounts.last()
                 elif len(worker_accounts) == 0:
@@ -986,9 +1011,7 @@ def admin_workers(request):
     return render(request, "superadmin/workers/index.html", context)
 
 
-
 def admin_worker_details(request, pk):
-
     worker = Worker.objects.get(id=pk)
 
     form = AdminWorker(instance=worker)
@@ -1004,12 +1027,11 @@ def admin_worker_details(request, pk):
         'form': form,
         'worker': worker,
     }
-    
+
     return render(request, 'superadmin/workers/details.html', context)
 
 
 def admin_worker_account(request, pk):
-
     worker = Worker.objects.get(id=pk)
 
     worker_accounts = WorkerAccount.objects.filter(completed=False).filter(worker=worker)
@@ -1024,9 +1046,11 @@ def admin_worker_account(request, pk):
             account.completed = True
             account.save()
             if worker.salary_types == 'monthly':
-                total_cost = float(worker.salary) - float(account.fines) - float(account.credits) + float(account.debits)
+                total_cost = float(worker.salary) - float(account.fines) - float(account.credits) + float(
+                    account.debits)
             else:
-                total_cost = float(account.workerworks_cost) - float(account.fines) - float(account.credits) + float(account.debits)
+                total_cost = float(account.workerworks_cost) - float(account.fines) - float(account.credits) + float(
+                    account.debits)
 
             # balance = Balance.objects.get(id=1)
             # balance.uzs_balance = float(balance.uzs_balance) - total_cost
@@ -1044,11 +1068,10 @@ def admin_worker_account(request, pk):
 
     context = {
         'worker': worker,
-        'accounts':worker_accounts,
+        'accounts': worker_accounts,
     }
 
     return render(request, 'superadmin/workers/account.html', context)
-
 
 
 def admin_worker_credits(request, wid, aid):
@@ -1065,26 +1088,22 @@ def admin_worker_credits(request, wid, aid):
         worker = Worker.objects.get(id=wid)
         worker_account = WorkerAccount.objects.get(id=aid)
         context = {
-            'worker':worker,
-            'account':worker_account,
-            'view':view_type
+            'worker': worker,
+            'account': worker_account,
+            'view': view_type
         }
         return render(request, 'superadmin/workers/all_stats.html', context)
     except:
         return redirect("base:admin-workers")
-    
-    
-    
+
 
 def admin_unclosed_salaries(request):
     unclosed_accounts = WorkerAccount.objects.filter(completed=False)
     context = {
-        'menu':'unclosed',
-        'accounts':unclosed_accounts
+        'menu': 'unclosed',
+        'accounts': unclosed_accounts
     }
     return render(request, 'superadmin/workers/unclosed.html', context)
-
-
 
 
 def admin_accounts_history(request):
@@ -1103,15 +1122,14 @@ def admin_accounts_history(request):
             accounts = accounts.filter(completed=True)
         elif a_type == 'false':
             accounts = accounts.filter(completed=False)
-        
+
         query = accounts
 
     context = {
-        'menu':'account-history',
-        'query':query
+        'menu': 'account-history',
+        'query': query
     }
     return render(request, 'superadmin/workers/history.html', context)
-
 
 
 def admin_account_details(request, pk):
@@ -1124,9 +1142,11 @@ def admin_account_details(request, pk):
             account.completed = True
             account.save()
             if worker.salary_types == 'monthly':
-                total_cost = float(worker.salary) - float(account.fines) - float(account.credits) + float(account.debits)
+                total_cost = float(worker.salary) - float(account.fines) - float(account.credits) + float(
+                    account.debits)
             else:
-                total_cost = float(account.workerworks_cost) - float(account.fines) - float(account.credits) + float(account.debits)
+                total_cost = float(account.workerworks_cost) - float(account.fines) - float(account.credits) + float(
+                    account.debits)
 
             # balance = Balance.objects.get(id=1)
             # balance.uzs_balance = float(balance.uzs_balance) - total_cost
@@ -1142,15 +1162,11 @@ def admin_account_details(request, pk):
 
         return redirect("superuser:worker-account", pk=account.id)
 
-
-
     context = {
-        'worker':account.worker,
-        'accounts':[account]
+        'worker': account.worker,
+        'accounts': [account]
     }
     return render(request, 'superadmin/workers/account.html', context)
-
-
 
 
 def admin_worker_stats(request):
@@ -1161,7 +1177,7 @@ def admin_worker_stats(request):
 
     if request.method == "POST":
         r = int(request.POST['rows_amount'])
-        for l in range(1, r+1):
+        for l in range(1, r + 1):
             try:
                 field = {
                     "field_id": l,
@@ -1169,7 +1185,7 @@ def admin_worker_stats(request):
                     "cost": request.POST[f'cost{l}'],
                     "amount": request.POST[f'amount{l}'],
                 }
-                print(field)
+
                 fields.append(field)
             except:
                 pass
@@ -1182,7 +1198,7 @@ def admin_worker_stats(request):
     }
 
     if 'rows' in request.GET:
-        arr = range(1, int(request.GET['rows'])+1)
+        arr = range(1, int(request.GET['rows']) + 1)
         context = {
             'menu': 'production_send',
             'workers': workers,
@@ -1190,8 +1206,6 @@ def admin_worker_stats(request):
             'rows_amount': request.GET['rows']
         }
     return render(request, 'superadmin/workers/stats.html', context)
-
-
 
 
 class FinanceView(IsAdminRole, ListView):
@@ -1228,8 +1242,6 @@ class FinanceView(IsAdminRole, ListView):
             finance.executor = self.request.user
             finance.save()
             return redirect("superuser:finance")
-
-
 
 
 def admin_pre_production_send_list(request):
@@ -1270,7 +1282,6 @@ def admin_pre_production_send_list(request):
                     gramm = 0
                     for d in design.designfield_set.all():
                         gramm += float(d.amount) / float(design.amount)
-                    print(gramm)
 
                     per_amount = int(float(request.POST['gr_amount']) / gramm)
                     if float(product.amount) < per_amount:
@@ -1355,36 +1366,34 @@ def admin_pre_production_send_list(request):
     return render(request, 'superadmin/production/sendlist.html', context)
 
 
-
 def admin_pre_production_send(request, pk):
     if request.user.is_authenticated and (request.user.role == 'ADMIN'):
         product = Product.objects.get(id=pk)
         form = AdminProductStockForm
         spare = SpareStorage.objects.filter(
             is_active="active").filter(spare__name__istartswith='salafan')
-        
+
         if request.method == "POST":
             form = AdminProductStockForm(data=request.POST)
-            
+
             all_products = float(
                 request.POST['set_amount']) * float(request.POST['product_per_set'])
-            
+
             labels = DesignLabel.objects.filter(design=product.design_type)
-            
+
             labels_amount = []
-            
+
             for l in labels:
                 if LabelStorage.objects.filter(label=l.label).aggregate(Sum('amount'))['amount__sum'] >= all_products:
                     labels_amount.append(True)
-                    
+
             if not all(labels_amount):
                 messages.error(
                     request, 'Yetarli etiketika mavjud emas', extra_tags='danger')
                 return redirect('superuser:pre-production')
-                
-            
+
             if form.is_valid() and all_products > 0:
-                
+
                 selected_spare = SpareStorage.objects.get(id=request.POST['spare'])
                 selected_design = Product.objects.get(id=pk)
 
@@ -1402,11 +1411,12 @@ def admin_pre_production_send(request, pk):
                     with transaction.atomic():
                         design = Design.objects.get(id=product.design_type.id)
 
-                        old_stock = ProductStock.objects.filter(design__id=design.id).filter(price=product.price).filter(
+                        old_stock = ProductStock.objects.filter(design__id=design.id).filter(
+                            price=product.price).filter(
                             price_type='uzs').filter(product_per_set=request.POST['product_per_set']).filter(
-                                confirmed_price=request.POST['confirmed_price']).filter(
-                                    is_active='active')
-                        
+                            confirmed_price=request.POST['confirmed_price']).filter(
+                            is_active='active')
+
                         if len(old_stock) > 0:
                             old_one = old_stock.first()
                             old_one.set_amount = float(
@@ -1419,22 +1429,20 @@ def admin_pre_production_send(request, pk):
                             stock.price = product.price
                             stock.is_active = 'active'
                             stock.save()
-                            
-                            
+
                         for lb in labels:
-                            if all_products <=0:
+                            if all_products <= 0:
                                 break
-                            
+
                             lb_items = LabelStorage.objects.filter(label=lb.label)
-                            
+
                             rm_amount = all_products
-                            
-                            for lb_item in lb_items:    
+
+                            for lb_item in lb_items:
                                 a_to_sub = min(all_products, float(lb_item.amount))
                                 lb_item.amount = float(lb_item.amount) - a_to_sub
                                 lb_item.save()
                                 rm_amount = rm_amount - a_to_sub
-                                
 
                             LabelStorageHistory.objects.create(
                                 executor=request.user,
@@ -1487,7 +1495,6 @@ def admin_pre_production_send(request, pk):
     return redirect('base:login')
 
 
-
 class StockView(IsAdminRole, ListView):
     model = ProductStock
     paginate_by = 20
@@ -1495,12 +1502,11 @@ class StockView(IsAdminRole, ListView):
     template_name = "superadmin/stock/list_create.html"
 
 
-
 class StockBarcodeView(IsAdminRole, ListView):
     model = ProductStock
     template_name = "superadmin/stock/barcodes.html"
-    
-    
+
+
 def stock_sell(request):
     materials = ProductStock.objects.filter(is_active='active')
 
@@ -1508,7 +1514,7 @@ def stock_sell(request):
         data = json.loads(request.POST['data'])
         items = data['items']
         all_has = []
-        
+
         for item in items:
             try:
                 st = ProductStock.objects.get(id=item['products'])
@@ -1524,8 +1530,7 @@ def stock_sell(request):
 
         if all(has == True for has in all_has):
             client = request.POST.get("client")
-            print(request.POST)
-            print(client)
+
             card = ProductSalesCard.objects.create(
                 card_id=uuid4(), given_cost=data['given_cost'], client=client)
             cost_total = 0
@@ -1572,13 +1577,20 @@ def stock_sell(request):
                 status=status
             )
 
+            Finance.objects.create(
+                executor=request.user,
+                cost=data['given_cost'],
+                comment=f"Savdo {client}",
+                type='debit'
+
+            )
+
             messages.success(request, "Mahsulot yuborildi")
 
         else:
             messages.error(
                 request, "Yetarli mahsulot mavjud emas", extra_tags='danger')
         return redirect('superuser:stock-remove')
-
 
     context = {
         'materials': materials,
@@ -1589,12 +1601,9 @@ def stock_sell(request):
     return render(request, 'superadmin/stock/sell.html', context)
 
 
-
 def remove_local_storage(request):
     my_url = reverse('superuser:stock-sell')
     return render(request, 'superadmin/stock/remove.html', {'my_url': my_url})
-
-
 
 
 def admin_sales(request):
@@ -1622,6 +1631,15 @@ def admin_sales(request):
                     end_cost=float(card.cost) - float(card.given_cost),
                     status=status
                 )
+
+                Finance.objects.create(
+                    executor=request.user,
+                    cost=request.POST['taken_cost'],
+                    comment=f"Qarz olindi {card.client}",
+                    type="debit"
+
+                )
+
                 messages.success(request, "Muvaffaqiyatli saqlandi")
         except:
             messages.error(
@@ -1637,7 +1655,7 @@ def admin_sales(request):
         diff=ExpressionWrapper(F('cost'), output_field=IntegerField(
         )) - ExpressionWrapper(F('given_cost'), output_field=IntegerField())
     ).filter(Q(diff=0)).filter(created_at__month=current_month, created_at__year=current_year)
-    
+
     if 'date' in request.GET and request.GET['date'] != '':
         start_month_str = request.GET.get('date')
         start_month = datetime.strptime(start_month_str, '%Y-%m')
@@ -1652,33 +1670,64 @@ def admin_sales(request):
     context = {
         'unfinished_sales': duplicates.order_by('-id'),
         'finished_sales': finished_sales.order_by('-id'),
-        'total_sales':total_sales
+        'total_sales': total_sales
 
     }
     return render(request, 'superadmin/stock/index.html', context)
-
 
 
 def sales_history(request):
     query = ProductSalesHistory.objects.all()
     date_from = request.GET.get('start')
     date_to = request.GET.get('end')
-    
+
     if not request.user.is_authenticated and request.user.role != "ADMIN":
         return redirect(reverse('users:login'))
-    
+
     if date_from:
         query = ProductSalesHistory.objects.filter(created_at__gte=date_from)
-        
+
     if request.GET.get('end'):
         query = ProductSalesHistory.objects.filter(created_at__lte=date_to)
-        
-        
-    print(request.GET.get('end'))
-    
-        
-    
+
     context = {
         'query': query.order_by('-created_at')
     }
     return render(request, 'superadmin/stock/history.html', context)
+
+
+class DesignPriceHistoryView(IsAdminRole, ListView):
+    model = DesignPriceHistory
+    paginate_by = 20
+    ordering = ["-created_at"]
+    template_name = "superadmin/design/history.html"
+
+    def get_queryset(self):
+        date_from = self.request.GET.get("date_from", None)
+        date_to = self.request.GET.get("date_to", None)
+        name = self.request.GET.get("name", None)
+        queryset = super().get_queryset()
+
+        if date_from:
+            queryset = queryset.filter(created_at__gte=date_from)
+
+        if date_to:
+            queryset = queryset.filter(created_at__lte=date_to)
+
+        if name:
+            queryset = queryset.filter(design_name__icontains=name)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        date_from = self.request.GET.get("date_from", "")
+        date_to = self.request.GET.get("date_to", "")
+        name = self.request.GET.get("name", "")
+
+        context['name'] = name
+        context['date_from'] = date_from
+        context['date_to'] = date_to
+
+        return context

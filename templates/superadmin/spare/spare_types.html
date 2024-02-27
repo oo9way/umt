@@ -41,11 +41,19 @@
             <tr>
                 <td>{{forloop.counter0|add:page_obj.start_index}}</td>
                 <td>{{obj.name}}</td>
+                {% if request.user.role == "ADMIN" %}
                 <td><a href="{% url 'superuser:spare_types_update' obj.pk %}"
                         class="btn btn-outline-dark">O'zgartirish</a>
                 </td>
                 <td><a href="{% url 'superuser:spare_types_delete' obj.pk %}"
                         class="btn btn-outline-danger">O'chirish</a></td>
+                {%else%}
+                <td><a href="{% url 'spare:spare_types_update' obj.pk %}"
+                        class="btn btn-outline-dark">O'zgartirish</a>
+                </td>
+                <td><a href="{% url 'spare:spare_types_delete' obj.pk %}"
+                        class="btn btn-outline-danger">O'chirish</a></td>
+                {% endif %}
             </tr>
             {% endfor %}
         </tbody>
